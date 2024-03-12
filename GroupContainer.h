@@ -6,4 +6,6 @@ class GroupContainer: public Container
 {
 public:
     GroupContainer(MemoryManager &mem): Container(mem) {}
+
+    size_t hash_function(void* key, size_t keySize);
 };

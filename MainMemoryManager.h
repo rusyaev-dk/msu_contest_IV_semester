@@ -7,12 +7,12 @@ private:
 public:
     MainMemoryManager(size_t size) : MemoryManager(size) {}
 
-    void *allocMem(size_t size)
+    void* allocMem(size_t size)
     {
         return new char[size];
     }
 
-    void freeMem(void *ptr)
+    void freeMem(void* ptr)
     {
         delete[] ptr;
     }
