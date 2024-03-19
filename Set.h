@@ -7,34 +7,42 @@ using namespace std;
 class Set : public AbstractSet {
 private:
     LinkedList** set_data;
-    int set_size;
+    size_t set_size;
+    int set_data_len;
+    int elem_count;
 public:
+
     class SetIterator : public AbstractSet::Iterator {
+    private:
         LinkedList::ListIterator* list_iterator;
         Set* set;
         int set_data_index;
-        
-        public:
-            SetIterator(Iterator* iterator, Set* set, int set_data_index);
+        SetIterator(Iterator* iterator, Set* set, int set_data_index);
+    public:
+        void* getElement(size_t &size);
+        bool hasNext();
+        void goToNext();
+        bool equals(Iterator *right);
 
-            void* getElement(size_t &size);
-            bool hasNext();
-            void goToNext();
-            bool equals(Iterator *right);
+        friend class Set;
     };
 
     Set(MemoryManager &mem);
 
     int insert(void* elem, size_t size) override;
 
-    size_t max_bytes() {};
+    size_t max_bytes();
     int size();
 
     Iterator* find(void* elem, size_t size) {};
     Iterator* newIterator();
 
-    void remove(Iterator *iter) {};
-    void clear() {};
+    void remove(Iterator *iter);
+
+    // Удаление всех элементов из контейнера.
+    void clear();
+    
+    // Если контейнер пуст возвращает true, иначе false
     bool empty() {};
     
     ~Set();
