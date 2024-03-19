@@ -48,9 +48,12 @@ Set::Set(MemoryManager &mem) : AbstractSet(mem) {
     }
 }
 
+// какие могут возникнуть ошибки?
 int Set::insert(void *elem, size_t size) {
+    if (this->find(elem, size) != nullptr) return 1;
+    // утечка памяти, не освобождается память, выделенная под set_iterator. Освобождать!
     size_t set_data_hash = this->hash_function(elem, size);
-    if (set_data_hash >= this->set_size) return -1;
+    if (set_data_hash >= this->set_size) return 2;
     
     if (!this->set_data[set_data_hash]) {
         this->set_data[set_data_hash] = new LinkedList(this->_memory);
@@ -129,6 +132,7 @@ void Set::clear() {
         if (!set_iterator->hasNext()) break;
         set_iterator->goToNext();
     }
+    this->elem_count = 0;
     free(set_iterator);
 }
 
