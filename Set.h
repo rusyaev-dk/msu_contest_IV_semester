@@ -10,8 +10,10 @@ private:
     size_t set_size;
     int set_data_len;
     int elem_count;
-public:
 
+    Iterator* newIterator(int set_data_index);
+
+public:
     class SetIterator : public AbstractSet::Iterator {
     private:
         LinkedList::ListIterator* list_iterator;
@@ -34,9 +36,9 @@ public:
     size_t max_bytes();
     int size();
 
-    Iterator* find(void* elem, size_t size) {};
+    Iterator* find(void* elem, size_t size);
     Iterator* newIterator();
-
+    
     void remove(Iterator *iter);
 
     // Удаление всех элементов из контейнера.

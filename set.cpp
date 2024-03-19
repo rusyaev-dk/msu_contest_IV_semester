@@ -49,13 +49,13 @@ Set::Set(MemoryManager &mem) : AbstractSet(mem) {
 }
 
 int Set::insert(void *elem, size_t size) {
-    size_t elem_index = this->hash_function(elem, size);
-    if (elem_index >= this->set_size) return -1;
+    size_t set_data_hash = this->hash_function(elem, size);
+    if (set_data_hash >= this->set_size) return -1;
     
-    if (!this->set_data[elem_index]) {
-        this->set_data[elem_index] = new LinkedList(this->_memory);
+    if (!this->set_data[set_data_hash]) {
+        this->set_data[set_data_hash] = new LinkedList(this->_memory);
     }
-    this->set_data[elem_index]->push_front(elem, size);
+    this->set_data[set_data_hash]->push_front(elem, size);
     this->elem_count += 1;
     return 0;
 }
@@ -69,9 +69,23 @@ size_t Set::max_bytes() {
 }
 
 Set::Iterator* Set::find(void *elem, size_t size) {
-    size_t elem_index = this->hash_function(elem, size);
-    Set::SetIterator* set_iterator = new SetIterator(set_data[elem_index]->newIterator(), this, elem_index);
-    return set_data[elem_index]->find(elem, size);
+    if (this->elem_count == 0) return nullptr;
+
+    size_t set_data_hash = this->hash_function(elem, size);
+    if (set_data[set_data_hash] == nullptr) return nullptr;
+
+    Set::SetIterator* set_iterator = dynamic_cast<Set::SetIterator*>(this->newIterator(set_data_hash));
+    size_t elem_size;
+    for (int i = 0; i < set_iterator->list_iterator->l->size(); i++) {
+        if (set_iterator->list_iterator->getElement(elem_size) == elem) return set_iterator;
+    }
+    free(set_iterator);
+    return nullptr;
+}
+
+Set::Iterator* Set::newIterator(int set_data_index) {
+    if (this->elem_count == 0) return nullptr;
+    return new SetIterator(set_data[set_data_index]->newIterator(), this, set_data_index);
 }
 
 Set::Iterator* Set::newIterator() {
@@ -88,14 +102,13 @@ void Set::remove(Iterator* iter) {
     
     size_t elem_size;
     void* elem = casted_iter->getElement(elem_size);
-    size_t elem_index = this->hash_function(elem, elem_size);
+    size_t set_data_hash = this->hash_function(elem, elem_size);
 
-    Set::SetIterator* set_iterator = new SetIterator(set_data[elem_index]->newIterator(), this, elem_index);
+    Set::SetIterator* set_iterator = new SetIterator(set_data[set_data_hash]->newIterator(), this, set_data_hash);
     
-    for (int i = elem_index; i < this->set_data_len; i++) {
+    for (int i = set_data_hash; i < this->set_data_len; i++) {
         if (set_iterator->equals(casted_iter)) {
-            // deleting...
-            // set_iterator->list_iterator->l->pop_back();
+            set_iterator->list_iterator->l->remove(set_iterator->list_iterator);
             this->elem_count -= 1;
             free(set_iterator);
             return;
@@ -124,6 +137,5 @@ bool Set::empty() {
 }
 
 Set::~Set() {
-    // this->_memory.freeMem(this->set_data); 
+    this->clear();
 }
-
