@@ -4,6 +4,8 @@
 // Базовый класс для некоторой группы абстрактных контейнеров
 class GroupContainer: public Container
 {
+protected:
+    const int container_size = 10000;
 public:
     GroupContainer(MemoryManager &mem): Container(mem) {}
 

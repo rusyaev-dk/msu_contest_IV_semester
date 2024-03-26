@@ -38,28 +38,35 @@ bool Set::SetIterator::equals(Iterator* right) {
 }
 
 Set::Set(MemoryManager &mem) : AbstractSet(mem) {
-    this->set_size = sizeof(LinkedList*) * 10000;
+    this->set_size = sizeof(LinkedList*) * this->container_size;
     this->set_data = (LinkedList**)this->_memory.allocMem(this->set_size);
-    this->set_data_len = 10000;
+    this->set_data_len = this->container_size;
     this->elem_count = 0;
 
-    for (int i = 0; i < 10000; i++) {
+    for (int i = 0; i < this->container_size; i++) {
         this->set_data[i] = nullptr;
     }
 }
 
-// какие могут возникнуть ошибки?
 int Set::insert(void *elem, size_t size) {
-    if (this->find(elem, size) != nullptr) return 1;
-    // утечка памяти, не освобождается память, выделенная под set_iterator. Освобождать!
+    SetIterator* set_iterator = dynamic_cast<SetIterator*>(this->find(elem, size));
+    if (set_iterator != nullptr) {
+        free(set_iterator);
+        return 1;
+    }
+
     size_t set_data_hash = this->hash_function(elem, size);
-    if (set_data_hash >= this->set_size) return 2;
+    if (set_data_hash >= this->set_size) {
+        free(set_iterator);
+        return 2;
+    }
     
     if (!this->set_data[set_data_hash]) {
         this->set_data[set_data_hash] = new LinkedList(this->_memory);
     }
     this->set_data[set_data_hash]->push_front(elem, size);
     this->elem_count += 1;
+    free(set_iterator);
     return 0;
 }
 
@@ -108,8 +115,8 @@ void Set::remove(Iterator* iter) {
     size_t set_data_hash = this->hash_function(elem, elem_size);
 
     Set::SetIterator* set_iterator = new SetIterator(set_data[set_data_hash]->newIterator(), this, set_data_hash);
-    
-    for (int i = set_data_hash; i < this->set_data_len; i++) {
+
+    for (int i = 0; i < set_iterator->list_iterator->l->size(); i++) {
         if (set_iterator->equals(casted_iter)) {
             set_iterator->list_iterator->l->remove(set_iterator->list_iterator);
             this->elem_count -= 1;
