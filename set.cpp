@@ -1,11 +1,12 @@
 #include "Set.h"
 #include "LinkedList1.h"
+#include <iostream>
 
 Set::SetIterator::SetIterator(Iterator* iterator, Set* set, int set_data_index) : set(set), set_data_index(set_data_index) {
     this->list_iterator = dynamic_cast<LinkedList::ListIterator*>(iterator);
 }
 
-void* Set::SetIterator::getElement(size_t &size) {
+void* Set::SetIterator::getElement(size_t& size) {
     return this->list_iterator->getElement(size);
 }
 
@@ -84,12 +85,16 @@ Set::Iterator* Set::find(void *elem, size_t size) {
     size_t set_data_hash = this->hash_function(elem, size);
     if (set_data[set_data_hash] == nullptr) return nullptr;
 
-    Set::SetIterator* set_iterator = dynamic_cast<Set::SetIterator*>(this->newIterator(set_data_hash));
-    size_t elem_size;
-    for (int i = 0; i < set_iterator->list_iterator->l->size(); i++) {
-        if (set_iterator->list_iterator->getElement(elem_size) == elem) return set_iterator;
+    LinkedList::ListIterator* list_iterator = dynamic_cast<LinkedList::ListIterator*>(set_data[set_data_hash]->find(elem, size));
+    if (list_iterator == nullptr) return nullptr;
+
+    size_t found_elem_size;
+    void* found_elem = list_iterator->getElement(found_elem_size);
+
+    if (found_elem_size == size && memcmp(found_elem, elem, size) == 0) {
+        return this->newIterator();
     }
-    free(set_iterator);
+    
     return nullptr;
 }
 
@@ -118,7 +123,7 @@ void Set::remove(Iterator* iter) {
 
     for (int i = 0; i < set_iterator->list_iterator->l->size(); i++) {
         if (set_iterator->equals(casted_iter)) {
-            set_iterator->list_iterator->l->remove(set_iterator->list_iterator);
+            this->set_data[set_data_hash]->remove(set_iterator->list_iterator);
             this->elem_count -= 1;
             free(set_iterator);
             return;

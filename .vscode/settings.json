@@ -1,5 +1,7 @@
 {
     "files.associations": {
+        "ostream": "cpp",
+        "list": "cpp",
         "atomic": "cpp",
         "bit": "cpp",
         "cctype": "cpp",
@@ -24,12 +26,10 @@
         "istream": "cpp",
         "iterator": "cpp",
         "limits": "cpp",
-        "list": "cpp",
         "locale": "cpp",
         "memory": "cpp",
         "mutex": "cpp",
         "new": "cpp",
-        "ostream": "cpp",
         "ratio": "cpp",
         "set": "cpp",
         "stdexcept": "cpp",

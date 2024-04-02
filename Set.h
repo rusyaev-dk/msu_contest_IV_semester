@@ -30,9 +30,12 @@ public:
     };
 
     Set(MemoryManager &mem);
+    ~Set();
 
     int insert(void* elem, size_t size) override;
 
+    // Функция возвращает значение, 
+    // равное максимальной вместимости контейнера в байтах.
     size_t max_bytes();
     int size();
 
@@ -45,7 +48,5 @@ public:
     void clear();
     
     // Если контейнер пуст возвращает true, иначе false
-    bool empty() {};
-    
-    ~Set();
+    bool empty();
 };
