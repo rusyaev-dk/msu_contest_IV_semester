@@ -7,9 +7,12 @@ private:
 public:
     MainMemoryManager(size_t size) : MemoryManager(size) {}
 
-    void* allocMem(size_t size)
-    {
-        return new char[size];
+    void* allocMem(size_t size) {
+        // try {
+            return new char[size];
+        // } catch (const std::bad_alloc& e) {
+        //     throw this->;
+        // }
     }
 
     void freeMem(void* ptr)

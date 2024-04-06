@@ -6,28 +6,30 @@ int main() {
     MainMemoryManager main_mem_mamanger(100);
     Set my_set(main_mem_mamanger);
 
-    int my_elem = 3346232;
+    double my_elem = -1.54;
     size_t my_elem_size = sizeof(my_elem);
 
+    // double my_elem_2 = 1.55;
+    // size_t my_elem_size_2 = sizeof(my_elem_2);
+
     int err = my_set.insert(&my_elem, my_elem_size);
-    if (err != 0) std::cout << "Error: " << err << std::endl;
+    // int err2 = my_set.insert(&my_elem_2, my_elem_size_2);
+    // if (err != 0 || err2 != 0) std::cout << "Error: " << err << std::endl;
     
-    Set::Iterator* set_iterator = my_set.newIterator();
-    
-    Set::Iterator* set_iterator2 = my_set.find(&my_elem, my_elem_size);
-    if (set_iterator2) {
+    Set::Iterator* set_iterator = my_set.find(&my_elem, my_elem_size);
+    if (set_iterator) {
         size_t new_size;
-        std::cout << "Found!\n\n";
-        std::cout << *(int*)(set_iterator2->getElement(new_size)) << "\n";
-    } else {
-        std::cout << "not Found!\n\n";
+        double found_elem = *(double*)(set_iterator->getElement(new_size));
+        std::cout << "Found elem: " << found_elem << "\n";
     }
 
-    // std::cout << "_____";
+    // my_set.remove(set_iterator);
+    
+    // if (set_iterator) {
+    //     size_t new_size;
+    //     double found_elem = *(double*)(set_iterator->getElement(new_size));
+    //     std::cout << "Found elem: " << found_elem << "\n";
+    // }
 
-    // size_t my_elem_size;
-    // int* my_saved_elem = (int*)set_iterator->getElement(my_elem_size);
-
-    // std::cout << "My elem: " << *my_saved_elem << std::endl;
     return 0;
 }
