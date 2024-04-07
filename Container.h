@@ -5,6 +5,7 @@
 #include <iostream>
 #include "MemoryManager.h"
 
+
 using namespace std;
 
 // Базовый класс для всех абстрактных контейнеров

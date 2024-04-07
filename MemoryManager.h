@@ -4,7 +4,8 @@
 // Базовый класс менеджера памяти
 class MemoryManager {
 private:
-    size_t _size;
+    size_t _size;    // через поле _memory выводим _мемори
+
 public:
     MemoryManager(size_t sz): _size(sz) {}
 
