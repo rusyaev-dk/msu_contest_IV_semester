@@ -17,6 +17,6 @@ public:
 
     void freeMem(void* ptr)
     {
-        // delete[] ptr;
+        delete[] ptr;
     }
 };

@@ -8,7 +8,7 @@ size_t GroupContainer::hash_function(void* key, size_t keySize) {
         hash += data[i];
     }
     hash %= this->container_size;
-    std::cout << "hash: " << hash << "\n";
+    // std::cout << "hash: " << hash << "\n\n";
     return hash;
 
     // unsigned char* data = (unsigned char*)key;

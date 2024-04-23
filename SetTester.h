@@ -1,5 +1,6 @@
 #pragma once
 #include "MainMemoryManager.h"
+#include "SetTesterExceptions.h"
 #include "Set.h"
 
 class SetTester {
@@ -8,9 +9,14 @@ private:
     MainMemoryManager* _mem_manager;
 
 public:
-    SetTester(size_t mem_size);
+    SetTester(size_t mem_bytes_size);
 
-    int insert_test(int test_elem_count);
+    void insert_test();
+    void find_test();
+    void remove_even_test();
+    void duplicate_iterator_test();
+
+    friend class SetTesterException;
 
     ~SetTester();
 };

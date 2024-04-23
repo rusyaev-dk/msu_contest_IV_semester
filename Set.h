@@ -8,19 +8,19 @@ class Set : public AbstractSet {
 private:
     LinkedList** _set_data;
     size_t _set_bytes_size;
-    int _set_data_len;
-    int _elem_count;
 
-    Iterator* newIterator(int set_data_index);
-    Iterator* newIterator(LinkedList::ListIterator* list_iterator, int set_data_index);
+    size_t _set_data_len;
+    size_t _elem_count;
 
+    Iterator* newIterator(size_t set_data_index);
+    
 public:
     class SetIterator : public AbstractSet::Iterator {
     private:
-        LinkedList::ListIterator* list_iterator;
-        Set* set;
-        int set_data_index;
-        SetIterator(Iterator* iterator, Set* set, int set_data_index);
+        LinkedList::ListIterator* _list_iterator;
+        Set* _set;
+        size_t _set_data_index;
+        SetIterator(Iterator* iterator, Set* set, size_t set_data_index);
     public:
         void* getElement(size_t &size) override;
         bool hasNext() override;
@@ -35,8 +35,6 @@ public:
 
     int insert(void* elem, size_t size) override;
 
-    // Функция возвращает значение, 
-    // равное максимальной вместимости контейнера в байтах.
     size_t max_bytes() override;
     int size() override;
 
@@ -44,10 +42,8 @@ public:
     Iterator* newIterator() override;
     
     void remove(Iterator *iter) override;
-
-    // Удаление всех элементов из контейнера.
     void clear() override;
-    
-    // Если контейнер пуст возвращает true, иначе false
     bool empty() override;
+
+    friend class SetTester;
 };

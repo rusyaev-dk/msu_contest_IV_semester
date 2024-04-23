@@ -2,40 +2,41 @@
 #include "LinkedList1.h"
 #include <iostream>
 
-Set::SetIterator::SetIterator(Iterator* iterator, Set* set, int set_data_index) : set(set), set_data_index(set_data_index) {
-    this->list_iterator = dynamic_cast<LinkedList::ListIterator*>(iterator);
+Set::SetIterator::SetIterator(Iterator* iterator, Set* set, size_t set_data_index) : _set(set), _set_data_index(set_data_index) {
+    this->_list_iterator = dynamic_cast<LinkedList::ListIterator*>(iterator);
 }
 
 void* Set::SetIterator::getElement(size_t& size) {
-    return this->list_iterator->getElement(size);
+    return this->_list_iterator->getElement(size);
 }
 
 bool Set::SetIterator::hasNext() {
-    if (this->list_iterator->hasNext()) return true;
+    if (this->_list_iterator->hasNext()) return true;
 
-    for (int i = this->set_data_index + 1; i < this->set->_set_data_len; i++) {
-        if (this->set->_set_data[i] != nullptr) return true;
+    for (size_t i = this->_set_data_index + 1; i < this->_set->_set_data_len; i++) {
+        if (this->_set->_set_data[i] != nullptr && !this->_set->_set_data[i]->empty()) return true;
     }
     return false;
 }
 
 void Set::SetIterator::goToNext() {
-    if (!this->list_iterator->hasNext()) {
-        for (int i = this->set_data_index; i < this->set->_set_data_len; i++) {
-            if (this->set->_set_data[i] != nullptr) {
-                this->list_iterator = dynamic_cast<LinkedList::ListIterator*>(this->set->_set_data[i]->newIterator());
-                this->set_data_index = i;
+    if (!this->_list_iterator->hasNext()) {
+        for (size_t i = this->_set_data_index + 1; i < this->_set->_set_data_len; i++) {
+            if (this->_set->_set_data[i] != nullptr && !this->_set->_set_data[i]->empty()) {
+                // free(this->list_iterator);
+                this->_list_iterator = dynamic_cast<LinkedList::ListIterator*>(this->_set->_set_data[i]->newIterator());
+                this->_set_data_index = i;
                 return;
             }
         }
         return;
     }
-    this->list_iterator->goToNext();
+    this->_list_iterator->goToNext();
 }
 
 bool Set::SetIterator::equals(Iterator* right) {
     Set::SetIterator* casted_right = dynamic_cast<Set::SetIterator*>(right);
-    return this->list_iterator->equals(casted_right->list_iterator);
+    return this->_list_iterator->equals(casted_right->_list_iterator);
 }
 
 Set::Set(MemoryManager &mem) : AbstractSet(mem) {
@@ -44,30 +45,34 @@ Set::Set(MemoryManager &mem) : AbstractSet(mem) {
     this->_set_data_len = this->container_size;
     this->_elem_count = 0;
 
-    for (int i = 0; i < this->container_size; i++) {
+    for (size_t i = 0; i < this->container_size; i++) {
         this->_set_data[i] = nullptr;
     }
 }
 
 int Set::insert(void *elem, size_t size) {
-    SetIterator* set_iterator = dynamic_cast<SetIterator*>(this->find(elem, size));
-    if (set_iterator != nullptr) {
-        free(set_iterator);
-        return 1;
-    }
+    size_t hash = this->hash_function(elem, size);
+    if (hash >= this->_set_data_len) return 2;
 
-    size_t set_data_hash = this->hash_function(elem, size);
-    if (set_data_hash >= this->_set_bytes_size) {
-        free(set_iterator);
-        return 2;
+    if (this->_set_data[hash] == nullptr) {
+        this->_set_data[hash] = new LinkedList(this->_memory);
+        int err = this->_set_data[hash]->push_front(elem, size);
+        if (err != 0) {
+       
+            this->_memory.freeMem(this->_set_data[hash]);
+            this->_set_data[hash] = nullptr;
+            return 2;
+        }
+        this->_elem_count += 1;
+        return 0;
     }
+    LinkedList::ListIterator* list_iter = dynamic_cast<LinkedList::ListIterator*>(this->_set_data[hash]->find(elem, size));
+    if (list_iter != nullptr) return 1;
     
-    if (!this->_set_data[set_data_hash]) {
-        this->_set_data[set_data_hash] = new LinkedList(this->_memory);
-    }
-    this->_set_data[set_data_hash]->push_front(elem, size);
+    int err = this->_set_data[hash]->push_front(elem, size);
+    if (err != 0) return 2;
+    
     this->_elem_count += 1;
-    free(set_iterator);
     return 0;
 }
 
@@ -80,7 +85,7 @@ size_t Set::max_bytes() {
 }
 
 Set::Iterator* Set::find(void *elem, size_t size) {
-    if (this->_elem_count == 0) return nullptr;
+    if (this->empty()) return nullptr;
 
     size_t set_data_hash = this->hash_function(elem, size);
     if (_set_data[set_data_hash] == nullptr) return nullptr;
@@ -92,63 +97,61 @@ Set::Iterator* Set::find(void *elem, size_t size) {
     void* found_elem = list_iterator->getElement(found_elem_size);
 
     if (found_elem_size == size && memcmp(found_elem, elem, size) == 0) {
-        return this->newIterator(list_iterator, set_data_hash);
+        return new SetIterator(list_iterator, this, set_data_hash);
     }
     
     return nullptr;
 }
 
-Set::Iterator* Set::newIterator(int set_data_index) {
-    if (this->_elem_count == 0) return nullptr;
-    return new SetIterator(_set_data[set_data_index]->newIterator(), this, set_data_index);
-}
-
-Set::Iterator* Set::newIterator(LinkedList::ListIterator* list_iterator, int set_data_index) {
-    if (this->_elem_count == 0) return nullptr;
-    return new SetIterator(list_iterator, this, set_data_index);
-}
-
 Set::Iterator* Set::newIterator() {
-    if (this->_elem_count == 0) return nullptr;
+    if (this->empty()) return nullptr;
     
-    for (int i = 0; i < this->_set_data_len; i++) {
+    for (size_t i = 0; i < this->_set_data_len; i++) {
         if (this->_set_data[i] != nullptr) return new SetIterator(_set_data[i]->newIterator(), this, i);
     }
     return nullptr;
 }
 
+Set::Iterator* Set::newIterator(size_t set_data_index) {
+    if (this->empty()) return nullptr;
+    return new SetIterator(_set_data[set_data_index]->newIterator(), this, set_data_index);
+}
+
 void Set::remove(Iterator* iter) {
+    if (this->empty()) return;
     Set::SetIterator* casted_iter = dynamic_cast<Set::SetIterator*>(iter);
-    
-    size_t elem_size;
-    void* elem = casted_iter->getElement(elem_size);
-    size_t set_data_hash = this->hash_function(elem, elem_size);
+    if (casted_iter->_set != this) return;
+    Set::SetIterator* duplicated_iter = new SetIterator(casted_iter->_list_iterator, this, casted_iter->_set_data_index);
 
-    Set::SetIterator* set_iterator = dynamic_cast<Set::SetIterator*>(this->find(elem, elem_size));
-    if (set_iterator == nullptr) return;
-
+    // size_t elem_size;
+    // void* elem = casted_iter->getElement(elem_size);
+    // _________________________________
     // size_t found_elem_size;
     // double found_elem = *(double*)set_iterator->getElement(found_elem_size);
+    // _________________________________
 
-    if (!iter->hasNext()) iter->goToNext();
-    this->_set_data[set_data_hash]->remove(set_iterator->list_iterator);
+    if (!casted_iter->_list_iterator->hasNext()) {
+        iter->goToNext();
+    }
+
+    size_t index = casted_iter->_set_data_index;
+    this->_set_data[index]->remove(duplicated_iter->_list_iterator);    
     this->_elem_count -= 1;
-    free(set_iterator);
+
+    free(duplicated_iter);
 }
 
 void Set::clear() {
-    if (this->_elem_count == 0) return;
-    Set::SetIterator* set_iterator = dynamic_cast<Set::SetIterator*>(this->newIterator());
-    
-    this->_set_data[set_iterator->set_data_index]->clear();
-    set_iterator->goToNext();
-    while (set_iterator->hasNext()) {
-        this->_set_data[set_iterator->set_data_index]->clear();
-        set_iterator->goToNext();
+    if (this->empty()) return;
+
+    for (size_t i = 0; i < this->_set_data_len; i++) {
+        if (this->_set_data[i] != nullptr) {
+            this->_set_data[i]->clear();
+        }
     }
     
     this->_elem_count = 0;
-    free(set_iterator);
+    std::cout << "Set cleared." << "\n";
 }
 
 bool Set::empty() {
@@ -157,5 +160,13 @@ bool Set::empty() {
 
 Set::~Set() {
     this->clear();
+    for (size_t i = 0; i < this->_set_data_len; i++) {
+        if (this->_set_data[i] != nullptr) {
+            this->_memory.freeMem(this->_set_data[i]);
+            this->_set_data[i] = nullptr;
+        }
+    }
+
     this->_memory.freeMem(this->_set_data);
+    std::cout << "Set destroyed" << "\n";
 }

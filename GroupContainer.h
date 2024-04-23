@@ -5,7 +5,7 @@
 class GroupContainer: public Container
 {
 protected:
-    const int container_size = 10000;
+    const int container_size = 100000;
 public:
     GroupContainer(MemoryManager &mem): Container(mem) {}
 
