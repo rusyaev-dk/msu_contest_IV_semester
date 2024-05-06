@@ -7,13 +7,13 @@ using namespace std;
 class Set : public AbstractSet {
 private:
     LinkedList** _set_data;
+    
     size_t _set_bytes_size;
-
-    size_t _set_data_len;
     size_t _elem_count;
 
-    Iterator* newIterator(size_t set_data_index);
-    
+    Iterator* _newIterator(size_t set_data_index);
+    void _rehash_set();
+
 public:
     class SetIterator : public AbstractSet::Iterator {
     private:

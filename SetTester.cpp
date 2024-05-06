@@ -3,16 +3,14 @@
 #include <chrono>
 
 SetTester::SetTester(size_t mem_bytes_size) {
-    MainMemoryManager* mem_manager = new MainMemoryManager(mem_bytes_size);
-    this->_mem_manager = mem_manager;
-    Set* new_set = new Set(*this->_mem_manager);
-    this->_set = new_set; 
+    this->_mem_manager = new MainMemoryManager(mem_bytes_size);
+    this->_set = new Set(*this->_mem_manager); 
 }
 
-void SetTester::insert_test() {
+void SetTester::insert_test(size_t insert_elem_count) {
     auto start = std::chrono::high_resolution_clock::now();
-    
-    for (size_t i = 0; i < this->_set->_set_data_len; i++) {
+
+    for (size_t i = 0; i < insert_elem_count; i++) {
         size_t new_elem = i;
         size_t new_elem_size = sizeof(new_elem);
         
@@ -25,29 +23,28 @@ void SetTester::insert_test() {
 
     auto finish = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double, std::milli> elapsed = finish - start;
-    std::cout << "Insertred " << this->_set->_set_data_len << " elements in " << elapsed.count() << " ms.\n";
+    std::cout << "Insertred " << insert_elem_count << " elements in " << elapsed.count() << " ms.\n";
     
     this->_set->clear();
 }
 
-void SetTester::find_test() {
-    for (size_t i = 0; i < this->_set->_set_data_len; i++) {
-        size_t new_elem = i;
-        size_t new_elem_size = sizeof(new_elem);
+void SetTester::find_test(size_t insert_elem_count) {
+    size_t new_elem_size;
+    for (size_t i = 0; i < insert_elem_count; i++) {
+        new_elem_size = sizeof(i);
         
-        int insert_err = this->_set->insert(&new_elem, new_elem_size);
+        int insert_err = this->_set->insert(&i, new_elem_size);
         if (insert_err != 0) {
             this->_set->clear();
-            throw SetTesterInsertException(i, &new_elem, insert_err);
+            throw SetTesterInsertException(i, &i, insert_err);
         }
     }
 
     auto start = std::chrono::high_resolution_clock::now();
-    for (size_t i = 0; i < this->_set->_set_data_len; i++) {
-        size_t new_elem_size;
-        Set::SetIterator* iter = dynamic_cast<Set::SetIterator*>(this->_set->find(&i, sizeof(i)));
+    for (size_t i = 0; i < insert_elem_count; i++) {
+        Set::Iterator* iter = this->_set->find(&i, sizeof(i));
         
-        if (iter == nullptr) {
+        if (!iter) {
             this->_set->clear();
             throw SetTesterFindException(i, &i);
         }
@@ -56,14 +53,13 @@ void SetTester::find_test() {
 
     auto finish = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double, std::milli> elapsed = finish - start;
-    std::cout << "Found " << this->_set->_set_data_len << " elements in " << elapsed.count() << " ms.\n";
+    std::cout << "Found " << insert_elem_count << " elements in " << elapsed.count() << " ms.\n";
     
     this->_set->clear();
 }
 
-
-void SetTester::remove_even_test() {
-    for (size_t i = 0; i < this->_set->_set_data_len; i++) {
+void SetTester::remove_even_test(size_t insert_elem_count) {
+    for (size_t i = 0; i < insert_elem_count; i++) {
         size_t new_elem = i;
         size_t new_elem_size = sizeof(new_elem);
         
@@ -106,14 +102,20 @@ void SetTester::remove_even_test() {
 }
 
 void SetTester::duplicate_iterator_test() {
-    size_t elem = 1;
-    int insert_err = this->_set->insert(&elem, sizeof(elem));
+    size_t elem_1 = 1, elem_2 = 2;
+    int insert_err = this->_set->insert(&elem_1, sizeof(elem_1));
+     if (insert_err != 0) {
+        this->_set->clear();
+        throw SetTesterInsertException(0, &elem_1, insert_err);
+    }
+    insert_err = this->_set->insert(&elem_2, sizeof(elem_2));
     if (insert_err != 0) {
         this->_set->clear();
-        throw SetTesterInsertException(0, &elem, insert_err);
+        throw SetTesterInsertException(0, &elem_1, insert_err);
     }
+
     Set::Iterator* iter_1 = this->_set->newIterator();
-    Set::Iterator* iter_2 = this->_set->find(&elem, sizeof(elem));
+    Set::Iterator* iter_2 = this->_set->find(&elem_1, sizeof(elem_1));
 
     this->_set->remove(iter_1);
     this->_set->remove(iter_2);
@@ -126,6 +128,6 @@ void SetTester::duplicate_iterator_test() {
 SetTester::~SetTester() {
     delete this->_set;
     delete this->_mem_manager;
-    // вызывать деструктор менеджера памяти !!!
+    // вызывать деструктор менеджера памяти
     // this->mem_manager->
 }

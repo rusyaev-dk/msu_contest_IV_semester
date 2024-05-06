@@ -5,7 +5,8 @@
 class GroupContainer: public Container
 {
 protected:
-    const int container_size = 100000;
+    int _container_size = 50000;
+    int _rehashing_treshhold = 50;
 public:
     GroupContainer(MemoryManager &mem): Container(mem) {}
 

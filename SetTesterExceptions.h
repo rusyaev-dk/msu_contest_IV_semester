@@ -10,7 +10,7 @@ class SetTesterInsertException : public SetTesterException {
         size_t _index;
         void* _elem;
     public:
-        SetTesterInsertException(size_t index = 0, void* elem, int err_code = 0);
+        SetTesterInsertException(size_t index, void* elem, int err_code = 0);
 
         int err_code();
         size_t index();
