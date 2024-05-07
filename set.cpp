@@ -2,8 +2,15 @@
 #include "LinkedList1.h"
 #include <iostream>
 
-Set::SetIterator::SetIterator(Iterator* iterator, Set* set, size_t set_data_index) : _set(set), _set_data_index(set_data_index) {
+Set::SetIterator::SetIterator(Iterator* iterator, Set* set) : _set(set) {
     this->_list_iterator = dynamic_cast<LinkedList::ListIterator*>(iterator);
+}
+
+size_t Set::SetIterator::_get_data_index() {
+    size_t elem_size;
+    void* elem = this->getElement(elem_size);
+    if (!elem) return 0; // ???
+    return this->_set->hash_function(elem, elem_size);
 }
 
 void* Set::SetIterator::getElement(size_t& size) {
@@ -13,7 +20,7 @@ void* Set::SetIterator::getElement(size_t& size) {
 bool Set::SetIterator::hasNext() {
     if (this->_list_iterator->hasNext()) return true;
 
-    for (size_t i = this->_set_data_index + 1; i < this->_set->_container_size; i++) {
+    for (size_t i = this->_get_data_index() + 1; i < this->_set->_container_size; i++) {
         bool hasNonEmptyList = this->_set->_set_data[i] != nullptr && !this->_set->_set_data[i]->empty(); 
         if (hasNonEmptyList) return true;
     }
@@ -22,12 +29,10 @@ bool Set::SetIterator::hasNext() {
 
 void Set::SetIterator::goToNext() {
     if (!this->_list_iterator->hasNext()) {
-        for (size_t i = this->_set_data_index + 1; i < this->_set->_container_size; i++) {
+        for (size_t i = this->_get_data_index() + 1; i < this->_set->_container_size; i++) {
             bool hasNonEmptyList = this->_set->_set_data[i] != nullptr && !this->_set->_set_data[i]->empty();
             if (hasNonEmptyList) {
-                // free(this->list_iterator);
                 this->_list_iterator = dynamic_cast<LinkedList::ListIterator*>(this->_set->_set_data[i]->newIterator());
-                this->_set_data_index = i;
                 return;
             }
         }
@@ -42,8 +47,8 @@ bool Set::SetIterator::equals(Iterator* right) {
 }
 
 Set::Set(MemoryManager &mem) : AbstractSet(mem) {
-    this->_set_bytes_size = sizeof(LinkedList*) * this->_container_size;
-    this->_set_data = (LinkedList**)this->_memory.allocMem(this->_set_bytes_size);
+    this->_bytes_size = sizeof(LinkedList*) * this->_container_size;
+    this->_set_data = (LinkedList**)this->_memory.allocMem(this->_bytes_size);
     this->_container_size = this->_container_size;
     this->_elem_count = 0;
 
@@ -54,7 +59,7 @@ Set::Set(MemoryManager &mem) : AbstractSet(mem) {
 
 int Set::insert(void *elem, size_t size) {
     size_t hash = this->hash_function(elem, size);
-    if (hash >= this->_container_size) return 2; // скорее всего убрать
+    if (hash >= this->_container_size) return 2; // ???
 
     if (this->_set_data[hash] == nullptr) {
         this->_set_data[hash] = new LinkedList(this->_memory);
@@ -94,22 +99,22 @@ void Set::_rehash_set() {
     
     size_t prev_container_size = this->_container_size;
     this->_container_size *= 2;
+    size_t new_set_data_size = sizeof(LinkedList*) * this->_container_size;
     // обработать исключение при невыделении памяти
-    LinkedList** new_set_data = (LinkedList**)this->_memory.allocMem(sizeof(LinkedList*) * this->_container_size);
+    LinkedList** new_set_data = (LinkedList**)this->_memory.allocMem(new_set_data_size);
 
     for (size_t i = 0; i < this->_container_size; i++) {
         new_set_data[i] = nullptr;
     }
 
     void* elem;
-    size_t elem_size;
-    size_t new_hash;
+    size_t elem_size, new_hash;
 
     for (size_t i = 0; i < prev_container_size; i++) {
         if (this->_set_data[i] == nullptr) continue;
         LinkedList::Iterator* list_iter = this->_set_data[i]->newIterator();
         
-        do {
+        for (size_t j = 0; j < this->_set_data[i]->size(); j++) {
             elem = list_iter->getElement(elem_size);
             new_hash = this->hash_function(elem, elem_size);
             if (new_set_data[new_hash] == nullptr) {
@@ -118,8 +123,8 @@ void Set::_rehash_set() {
             }
             new_set_data[new_hash]->push_front(elem, elem_size);
             list_iter->goToNext();
-        } while (list_iter->hasNext());
-
+        }
+        
         this->_set_data[i]->~LinkedList();
         free(list_iter);
     }
@@ -132,7 +137,7 @@ int Set::size() {
 }
 
 size_t Set::max_bytes() {
-    return this->_set_bytes_size;
+    return this->_bytes_size;
 }
 
 Set::Iterator* Set::find(void *elem, size_t size) {
@@ -149,7 +154,7 @@ Set::Iterator* Set::find(void *elem, size_t size) {
     bool elementsMatch = found_elem_size == size && memcmp(found_elem, elem, size) == 0;
     
     if (elementsMatch) {
-        return new SetIterator(list_iter, this, hash);
+        return new SetIterator(list_iter, this);
     }
     
     free(list_iter);
@@ -161,36 +166,24 @@ Set::Iterator* Set::newIterator() {
     
     for (size_t i = 0; i < this->_container_size; i++) {
         if (this->_set_data[i] != nullptr) {
-            return new SetIterator(_set_data[i]->newIterator(), this, i);
+            return new SetIterator(this->_set_data[i]->newIterator(), this);
         }
     }
     return nullptr;
-}
-
-Set::Iterator* Set::_newIterator(size_t set_data_index) {
-    if (this->empty()) return nullptr;
-    return new SetIterator(_set_data[set_data_index]->newIterator(), this, set_data_index);
 }
 
 void Set::remove(Iterator* iter) {
     if (this->empty()) return;
     Set::SetIterator* casted_iter = dynamic_cast<Set::SetIterator*>(iter);
     if (casted_iter->_set != this) return;
-    Set::SetIterator* duplicated_iter = new SetIterator(casted_iter->_list_iterator, this, casted_iter->_set_data_index);
-
-    // size_t elem_size;
-    // void* elem = casted_iter->getElement(elem_size);
-    // _________________________________
-    // size_t found_elem_size;
-    // double found_elem = *(double*)set_iterator->getElement(found_elem_size);
-    // _________________________________
+    Set::SetIterator* duplicated_iter = new SetIterator(casted_iter->_list_iterator, this);
 
     bool isLastElemInList = !casted_iter->_list_iterator->hasNext();
     if (isLastElemInList) {
         iter->goToNext();
     }
 
-    size_t index = casted_iter->_set_data_index;
+    size_t index = casted_iter->_get_data_index();
     this->_set_data[index]->remove(duplicated_iter->_list_iterator);    
     this->_elem_count -= 1;
 

@@ -15,6 +15,7 @@ public:
     void find_test(size_t insert_elem_count);
     void remove_even_test(size_t insert_elem_count);
     void duplicate_iterator_test();
+    void iterator_test(size_t insert_elem_count);
 
     friend class SetTesterException;
 

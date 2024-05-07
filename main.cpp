@@ -7,12 +7,13 @@
 
 int main() {
     SetTester set_tester = SetTester(1000000000);
-    // find test failed (50k size and 1.75mln elems)
+
     std::vector<std::function<void()>> tester_functions = {
-        // [&set_tester]() { return set_tester.insert_test(1750000); },
-        [&set_tester]() { return set_tester.find_test(1750000); },
+        [&set_tester]() { return set_tester.insert_test(8000000); },
+        // [&set_tester]() { return set_tester.find_test(175000); },
         // [&set_tester]() { return set_tester.remove_even_test(1500000); },
         // [&set_tester]() { return set_tester.duplicate_iterator_test(); },
+        // [&set_tester]() { return set_tester.iterator_test(10); },
     };
 
     for (int i = 0; i < tester_functions.size(); ++i) {
@@ -21,15 +22,17 @@ int main() {
             std::cout << "✓ Test " << i + 1 << " passed\n";
             std::cout << "_____________________________\n";
         } catch (SetTesterInsertException exception) {
-            std::cout << "Caught insert exception. Address: " << exception.elem() << " at position: " << exception.index() << " callback code: " << exception.err_code() << "\n";  
+            size_t* elem = static_cast<size_t*>(exception.get_elem());
+            std::cout << "Caught insert exception. Elem: " << *elem << ". Error code: " << exception.get_err_code() << "\n";  
             std::cout << "⚠️ Test " << i << " failed\n";
             continue;
         } catch (SetTesterFindException exception) {
-            std::cout << "Caught find exception. Address: " << exception.elem() << " at position: " << exception.index() << "\n";  
+            size_t* elem = static_cast<size_t*>(exception.get_elem());
+            std::cout << "Caught find exception. Elem: " << *elem << "\n";  
             std::cout << "⚠️ Test " << i << " failed\n";
             continue;
         } catch (SetTesterRemoveException exception) {
-            int* elem = (int*)exception.elem();
+            size_t* elem = static_cast<size_t*>(exception.get_elem());
             std::cout << "Caught remove exception." << " Elem " << *elem <<" at address " << elem << "\n";  
             std::cout << "⚠️ Test " << i << " failed\n";
             continue;

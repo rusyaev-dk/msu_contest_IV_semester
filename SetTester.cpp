@@ -9,31 +9,28 @@ SetTester::SetTester(size_t mem_bytes_size) {
 
 void SetTester::insert_test(size_t insert_elem_count) {
     auto start = std::chrono::high_resolution_clock::now();
-
+    int insert_err;
     for (size_t i = 0; i < insert_elem_count; i++) {
-        size_t new_elem = i;
-        size_t new_elem_size = sizeof(new_elem);
-        
-        int insert_err = this->_set->insert(&new_elem, new_elem_size);
+
+        insert_err = this->_set->insert(&i, sizeof(i));
         if (insert_err != 0) {
             this->_set->clear();
-            throw SetTesterInsertException(i, &new_elem, insert_err);
+            throw SetTesterInsertException(i, &i, insert_err);
         }
     }
 
     auto finish = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double, std::milli> elapsed = finish - start;
-    std::cout << "Insertred " << insert_elem_count << " elements in " << elapsed.count() << " ms.\n";
+    std::cout << "Inserted " << insert_elem_count << " elements in " << elapsed.count() << " ms.\n";
     
     this->_set->clear();
 }
 
 void SetTester::find_test(size_t insert_elem_count) {
-    size_t new_elem_size;
+    int insert_err;
     for (size_t i = 0; i < insert_elem_count; i++) {
-        new_elem_size = sizeof(i);
         
-        int insert_err = this->_set->insert(&i, new_elem_size);
+        insert_err = this->_set->insert(&i, sizeof(i));
         if (insert_err != 0) {
             this->_set->clear();
             throw SetTesterInsertException(i, &i, insert_err);
@@ -41,8 +38,9 @@ void SetTester::find_test(size_t insert_elem_count) {
     }
 
     auto start = std::chrono::high_resolution_clock::now();
+    Set::Iterator* iter;
     for (size_t i = 0; i < insert_elem_count; i++) {
-        Set::Iterator* iter = this->_set->find(&i, sizeof(i));
+        iter = this->_set->find(&i, sizeof(i));
         
         if (!iter) {
             this->_set->clear();
@@ -71,8 +69,7 @@ void SetTester::remove_even_test(size_t insert_elem_count) {
     }
 
     size_t* elem;
-    size_t elem_size;
-    size_t counter = 0;
+    size_t elem_size, counter = 0;
     Set::SetIterator* set_iter = dynamic_cast<Set::SetIterator*>(this->_set->newIterator());
     
     auto start = std::chrono::high_resolution_clock::now();   
@@ -122,6 +119,28 @@ void SetTester::duplicate_iterator_test() {
 
     free(iter_1);
     free(iter_2);
+    this->_set->clear();
+}
+
+void SetTester::iterator_test(size_t insert_elem_count) {
+    for (size_t i = 0; i < insert_elem_count; i++) {
+        size_t new_elem = i;
+        size_t new_elem_size = sizeof(new_elem);
+        
+        int insert_err = this->_set->insert(&new_elem, new_elem_size);
+        if (insert_err != 0) {
+            this->_set->clear();
+            throw SetTesterInsertException(i, &new_elem, insert_err);
+        }
+    }
+    size_t elem_to_remove = 5;
+
+    Set::SetIterator* set_iter = dynamic_cast<Set::SetIterator*>(this->_set->find(&elem_to_remove, sizeof(elem_to_remove)));
+
+    this->_set->remove(set_iter);
+    this->_set->remove(set_iter);
+
+    size_t set_size = this->_set->size();
     this->_set->clear();
 }
 

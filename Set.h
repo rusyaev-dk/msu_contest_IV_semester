@@ -7,11 +7,10 @@ using namespace std;
 class Set : public AbstractSet {
 private:
     LinkedList** _set_data;
-    
-    size_t _set_bytes_size;
+
+    size_t _bytes_size;
     size_t _elem_count;
 
-    Iterator* _newIterator(size_t set_data_index);
     void _rehash_set();
 
 public:
@@ -19,8 +18,10 @@ public:
     private:
         LinkedList::ListIterator* _list_iterator;
         Set* _set;
-        size_t _set_data_index;
-        SetIterator(Iterator* iterator, Set* set, size_t set_data_index);
+        
+        SetIterator(Iterator* iterator, Set* set);
+        size_t _get_data_index();
+
     public:
         void* getElement(size_t &size) override;
         bool hasNext() override;

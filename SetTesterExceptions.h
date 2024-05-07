@@ -12,9 +12,9 @@ class SetTesterInsertException : public SetTesterException {
     public:
         SetTesterInsertException(size_t index, void* elem, int err_code = 0);
 
-        int err_code();
-        size_t index();
-        void* elem();
+        int get_err_code();
+        size_t get_index();
+        void* get_elem();
 };
 
 class SetTesterFindException : public SetTesterException {
@@ -24,8 +24,8 @@ class SetTesterFindException : public SetTesterException {
     public:
         SetTesterFindException(size_t index, void* elem);
         
-        size_t index();
-        void* elem();
+        size_t get_index();
+        void* get_elem();
 };
 
 class SetTesterRemoveException : public SetTesterException {
@@ -34,5 +34,5 @@ class SetTesterRemoveException : public SetTesterException {
     public:
         SetTesterRemoveException(void* elem);
         
-        void* elem();
+        void* get_elem();
 };
