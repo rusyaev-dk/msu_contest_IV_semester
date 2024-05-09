@@ -1,6 +1,6 @@
 #include "SetTesterExceptions.h"
 
-SetTesterInsertException::SetTesterInsertException(size_t index, void* elem, int err_code) :  _index(index), _elem(elem), _err_code(err_code) {}
+SetTesterInsertException::SetTesterInsertException(size_t index, void* elem, int err_code, string msg) :  _index(index), _elem(elem), _err_code(err_code), _msg(msg) {}
 
 int SetTesterInsertException::get_err_code() {return this->_err_code;}
 size_t SetTesterInsertException::get_index() {return this->_index;}
