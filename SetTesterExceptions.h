@@ -4,7 +4,10 @@
 
 using namespace std;
 
-class SetTesterException {};
+class SetTesterException {
+public:
+    virtual string what() const = 0;
+};
 
 class SetTesterInsertException : public SetTesterException {
 private:
@@ -13,8 +16,9 @@ private:
 public:
     SetTesterInsertException(void* elem, int err_code);
 
-    int get_err_code();
-    void* get_elem();
+    int get_err_code() const;
+    void* get_elem() const;
+    string what() const override;
 };
 
 class SetTesterFindException : public SetTesterException {
@@ -23,7 +27,8 @@ private:
 public:
     SetTesterFindException(void* elem);
     
-    void* get_elem();
+    void* get_elem() const;
+    string what() const override;
 };
 
 class SetTesterRemoveException : public SetTesterException {
@@ -32,5 +37,6 @@ private:
 public:
     SetTesterRemoveException(void* elem);
     
-    void* get_elem();
+    void* get_elem() const;
+    string what() const override;
 };

@@ -1,18 +1,38 @@
 #include "SetTesterExceptions.h"
+#include <sstream>
 
-SetTesterInsertException::SetTesterInsertException(size_t index, void* elem, int err_code, string msg) :  _index(index), _elem(elem), _err_code(err_code), _msg(msg) {}
+SetTesterInsertException::SetTesterInsertException(void* elem, int err_code) : _elem(elem), _err_code(err_code) {}
 
-int SetTesterInsertException::get_err_code() {return this->_err_code;}
-size_t SetTesterInsertException::get_index() {return this->_index;}
-void* SetTesterInsertException::get_elem() {return this->_elem;}
+int SetTesterInsertException::get_err_code() const {return this->_err_code;}
 
+void* SetTesterInsertException::get_elem() const {return this->_elem;}
 
-SetTesterFindException::SetTesterFindException(size_t index, void* elem) : _index(index), _elem(elem) {}
+string SetTesterInsertException::what() const {
+    std::stringstream ss;
+    ss << "Couldn't insert elem at address: " << this->_elem << " Error code: " << this->_err_code;
+    return ss.str();
+}
 
-size_t SetTesterFindException::get_index() {return this->_index;}
-void* SetTesterFindException::get_elem() {return this->_elem;}
+// Find:
 
+SetTesterFindException::SetTesterFindException(void* elem) : _elem(elem) {}
+
+void* SetTesterFindException::get_elem() const {return this->_elem;}
+
+string SetTesterFindException::what() const {
+    std::stringstream ss;
+    ss << "Couldn't find elem at address: " << this->_elem;
+    return ss.str();
+}
+
+// Remove:
 
 SetTesterRemoveException::SetTesterRemoveException(void* elem) : _elem(elem) {}
 
-void* SetTesterRemoveException::get_elem() {return this->_elem;}
+void* SetTesterRemoveException::get_elem() const {return this->_elem;}
+
+string SetTesterRemoveException::what() const {
+    std::stringstream ss;
+    ss << "Couldn't insert elem at address: " << this->_elem;
+    return ss.str();
+}

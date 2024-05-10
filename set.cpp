@@ -212,7 +212,7 @@ Set::~Set() {
     for (size_t i = 0; i < this->_container_size; i++) {
         if (this->_set_data[i] != nullptr) {
             this->_memory.freeMem(this->_set_data[i]);
-            this->_set_data[i] = nullptr;
+            this->_set_data[i] = nullptr; // ???
         }
     }
 
