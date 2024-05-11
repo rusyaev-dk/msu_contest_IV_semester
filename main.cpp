@@ -1,6 +1,6 @@
 #include "SetTester.h"
-#include <iostream>
 
+#include <iostream>
 #include <functional>
 #include <vector>
 

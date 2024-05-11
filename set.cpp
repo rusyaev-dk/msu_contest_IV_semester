@@ -1,5 +1,6 @@
 #include "Set.h"
 #include "LinkedList1.h"
+
 #include <iostream>
 
 Set::SetIterator::SetIterator(Iterator* iterator, Set* set) : _set(set) {

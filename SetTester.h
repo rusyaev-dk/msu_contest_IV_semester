@@ -1,4 +1,5 @@
 #pragma once
+
 #include "MainMemoryManager.h"
 #include "SetTesterExceptions.h"
 #include "Set.h"
@@ -16,11 +17,10 @@ public:
     SetTester(size_t mem_bytes_size);
 
     void insert_test(size_t elem_count);
-    // void insert_duplicates_test(size_t elem_count);
+    void insert_duplicates_test(size_t elem_count);
     void find_test(size_t elem_count);
     void remove_even_test(size_t elem_count);
     void duplicated_iterator_test();
-    void iterator_test(size_t elem_count);
 
     void run_all_tests(size_t elem_count);
     

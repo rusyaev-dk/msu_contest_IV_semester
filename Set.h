@@ -1,4 +1,5 @@
 #pragma once
+
 #include "SetAbstract.h"
 #include "LinkedList1.h"
 

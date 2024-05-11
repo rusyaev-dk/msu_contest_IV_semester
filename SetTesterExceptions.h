@@ -1,42 +1,31 @@
 #pragma once
+
 #include <iostream>
 #include <string>
 
 using namespace std;
 
+enum ErrorCode {
+    DUPLICATE_INSERT_ERROR,
+    INSERT_ERROR,
+    ELEM_NOT_FOUND_ERROR,
+    REMOVE_ERROR,
+    UNKNOWN_ERROR,
+};
+
 class SetTesterException {
-public:
-    virtual string what() const = 0;
-};
-
-class SetTesterInsertException : public SetTesterException {
 private:
-    int _err_code;
-    void* _elem;
-public:
-    SetTesterInsertException(void* elem, int err_code);
-
-    int get_err_code() const;
-    void* get_elem() const;
-    string what() const override;
-};
-
-class SetTesterFindException : public SetTesterException {
-private:
-    void* _elem;
-public:
-    SetTesterFindException(void* elem);
     
-    void* get_elem() const;
-    string what() const override;
-};
-
-class SetTesterRemoveException : public SetTesterException {
-private:
+    string _msg;
+    ErrorCode _err_code;
     void* _elem;
+
 public:
-    SetTesterRemoveException(void* elem);
-    
-    void* get_elem() const;
-    string what() const override;
+
+    SetTesterException(ErrorCode err_code);
+    SetTesterException(ErrorCode err_code, void* elem);
+    SetTesterException(ErrorCode err_code, string msg);
+    SetTesterException(ErrorCode err_code, void* elem, string msg);
+
+    string what() const;
 };

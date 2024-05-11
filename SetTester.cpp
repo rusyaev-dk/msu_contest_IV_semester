@@ -1,11 +1,10 @@
 #include "SetTester.h"
-#include "SetTesterExceptions.h"
 
 #include <chrono>
 #include <functional>
 #include <vector>
 
-static const int TOTAL_TESTS_COUNT = 5;
+static const int _TOTAL_TESTS_COUNT = 5;
 
 SetTester::SetTester(size_t mem_bytes_size) {
     this->_mem_manager = new MainMemoryManager(mem_bytes_size);
@@ -28,9 +27,17 @@ void SetTester::_fill_set(size_t elem_count) {
     int err_code;
     for (size_t i = 0; i < elem_count; i++) {
         err_code = this->_set->insert(&i, sizeof(i));
-        if (err_code != 0) {
+        switch (err_code) {
+            case 1:
             this->_destroy_set();
-            throw SetTesterInsertException(&i, err_code);
+            throw SetTesterException(DUPLICATE_INSERT_ERROR);
+
+            case 2:
+            this->_destroy_set();
+            throw SetTesterException(INSERT_ERROR, "Couldn't insert elem");
+
+            default:
+            break;
         }
     }
 }
@@ -39,14 +46,33 @@ void SetTester::insert_test(size_t elem_count) {
     this->_create_set();
 
     auto start = std::chrono::high_resolution_clock::now();
-    
     this->_fill_set(elem_count);
-
     auto finish = std::chrono::high_resolution_clock::now();
+
+    if (this->_set->size() != elem_count) {
+        this->_destroy_set();
+        throw SetTesterException(INSERT_ERROR, "Not all elems have been inserted!");
+    }
+
     std::chrono::duration<double, std::milli> elapsed = finish - start;
     std::cout << "Inserted " << elem_count << " elements in " << elapsed.count() << " ms.\n";
     
     this->_destroy_set();
+}
+
+void SetTester::insert_duplicates_test(size_t elem_count) {
+    this->_create_set();
+    this->_fill_set(elem_count);
+    
+    try {
+        this->_fill_set(elem_count);
+    } catch (SetTesterException& e) {
+        this->_destroy_set();
+        return;
+    }
+
+    this->_destroy_set();
+    throw SetTesterException(DUPLICATE_INSERT_ERROR);
 }
 
 void SetTester::find_test(size_t elem_count) {
@@ -59,7 +85,7 @@ void SetTester::find_test(size_t elem_count) {
         iter = this->_set->find(&i, sizeof(i));
         if (!iter) {
             this->_destroy_set();
-            throw SetTesterFindException(&i);
+            throw SetTesterException(ELEM_NOT_FOUND_ERROR);
         }
         free(iter);
     }
@@ -96,7 +122,7 @@ void SetTester::remove_even_test(size_t elem_count) {
             free(set_iter);
             free(checking_iter);
             this->_destroy_set();
-            throw SetTesterRemoveException(elem);
+            throw SetTesterException(REMOVE_ERROR);
         }
         counter++;
     } while (set_iter->hasNext());
@@ -114,9 +140,17 @@ void SetTester::duplicated_iterator_test() {
     
     size_t elem = 123;
     int err_code = this->_set->insert(&elem, sizeof(elem));
-    if (err_code != 0) {
+    switch (err_code) {
+        case 1:
         this->_destroy_set();
-        throw SetTesterInsertException(&elem, err_code);
+        throw SetTesterException(DUPLICATE_INSERT_ERROR);
+
+        case 2:
+        this->_destroy_set();
+        throw SetTesterException(UNKNOWN_ERROR, "Couldn't insert elem");
+    
+        default:
+        break;
     }
 
     Set::Iterator* iter_1 = this->_set->newIterator();
@@ -130,22 +164,6 @@ void SetTester::duplicated_iterator_test() {
     this->_destroy_set();
 }
 
-void SetTester::iterator_test(size_t elem_count) {
-    this->_create_set();
-    this->_fill_set(elem_count);
-    size_t elem_to_remove = 5;
-
-    Set::SetIterator* set_iter = dynamic_cast<Set::SetIterator*>(this->_set->find(&elem_to_remove, sizeof(elem_to_remove)));
-    try {
-        this->_set->remove(set_iter);
-        this->_set->remove(set_iter);
-    } catch (std::exception& e) {
-        std::cout << "Jopa" << e.what();
-    }
-    free(set_iter);
-    this->_destroy_set();
-}
-
 void SetTester::run_all_tests(size_t elem_count) {
     int passed_count = 0;
     try {
@@ -154,6 +172,14 @@ void SetTester::run_all_tests(size_t elem_count) {
         passed_count++;
     } catch (const SetTesterException& e) {
         std::cerr << "Insert test failed: " << e.what() << std::endl;
+    }
+
+    try {
+        this->insert_duplicates_test(elem_count);
+        std::cout << "✓ Insert duplicates test passed" << std::endl;
+        passed_count++;
+    } catch (const SetTesterException& e) {
+        std::cerr << "Insert duplicates test failed: " << e.what() << std::endl;
     }
 
     try {
@@ -179,16 +205,8 @@ void SetTester::run_all_tests(size_t elem_count) {
     } catch (const SetTesterException& e) {
         std::cerr << "Duplicated iterator test failed: " << e.what() << std::endl;
     }
-
-    try {
-        this->iterator_test(elem_count);
-        std::cout << "✓ Iterator test passed" << std::endl;
-        passed_count++;
-    } catch (const SetTesterException& e) {
-        std::cerr << "Iterator test failed: " << e.what() << std::endl;
-    }
     
-    std::cout << "Passed " << passed_count << " of " << TOTAL_TESTS_COUNT << " tests\n";
+    std::cout << "Passed " << passed_count << " of " << _TOTAL_TESTS_COUNT << " tests\n";
 }
 
 SetTester::~SetTester() {
