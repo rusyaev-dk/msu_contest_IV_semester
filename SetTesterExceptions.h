@@ -15,9 +15,8 @@ enum ErrorCode {
 
 class SetTesterException {
 private:
-    
-    string _msg;
     ErrorCode _err_code;
+    string _msg;
     void* _elem;
 
 public:

@@ -5,7 +5,7 @@
 class GroupContainer: public Container
 {
 protected:
-    int _container_size = 50000;
+    int _data_array_size = 5000;
     int _rehashing_treshhold = 50;
 public:
     GroupContainer(MemoryManager &mem): Container(mem) {}

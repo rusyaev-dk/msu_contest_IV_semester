@@ -16,11 +16,12 @@ private:
 public:
     SetTester(size_t mem_bytes_size);
 
-    void insert_test(size_t elem_count);
-    void insert_duplicates_test(size_t elem_count);
-    void find_test(size_t elem_count);
-    void remove_even_test(size_t elem_count);
-    void duplicated_iterator_test();
+    void test_insert(size_t elem_count);
+    void test_insert_duplicates(size_t elem_count);
+    void test_find(size_t elem_count);
+    void test_remove(size_t elem_count);
+    void test_remove_even(size_t elem_count);
+    void test_duplicated_iterator();
 
     void run_all_tests(size_t elem_count);
     

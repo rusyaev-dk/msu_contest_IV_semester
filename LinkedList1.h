@@ -11,15 +11,15 @@ typedef struct Pair {
 
 using TList = list<Pair *>;
 
-class LinkedList : public AbstractList
+class LinkedList1 : public AbstractList
 {
 private:
     TList *m_list;
 
 public:
-    LinkedList(MemoryManager &mem) : AbstractList(mem), m_list(new TList()) {}
+    LinkedList1(MemoryManager &mem) : AbstractList(mem), m_list(new TList()) {}
 
-    ~LinkedList() {}
+    ~LinkedList1() {}
 
     int push_front(void *elem, size_t elemSize)
     {
@@ -39,7 +39,7 @@ public:
         return (*it)->elem;
     }
 
-    class ListIterator : public LinkedList::Iterator {
+    class ListIterator : public LinkedList1::Iterator {
     public:
         TList* l;
         TList::iterator it;

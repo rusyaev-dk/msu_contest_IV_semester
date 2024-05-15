@@ -7,7 +7,7 @@ using namespace std;
 
 class Set : public AbstractSet {
 private:
-    LinkedList** _set_data;
+    LinkedList1** _data_array;
 
     size_t _bytes_size;
     size_t _elem_count;
@@ -17,12 +17,12 @@ private:
 public:
     class SetIterator : public AbstractSet::Iterator {
     private:
-        LinkedList::ListIterator* _list_iterator;
+        LinkedList1::ListIterator* _list_iterator;
         Set* _set;
         
         SetIterator(Iterator* iterator, Set* set);
         size_t _get_data_index();
-
+        // добавить деструктор
     public:
         void* getElement(size_t &size) override;
         bool hasNext() override;
@@ -33,19 +33,20 @@ public:
     };
 
     Set(MemoryManager &mem);
-    ~Set();
 
     int insert(void* elem, size_t size) override;
-
-    size_t max_bytes() override;
-    int size() override;
 
     Iterator* find(void* elem, size_t size) override;
     Iterator* newIterator() override;
     
     void remove(Iterator *iter) override;
     void clear() override;
+    
     bool empty() override;
+    int size() override;
+    size_t max_bytes() override;
+    
+    ~Set();
 
     friend class SetTester;
 };

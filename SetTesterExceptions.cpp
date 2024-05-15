@@ -17,16 +17,15 @@ string SetTesterException::what() const {
             ss << "Elem not found.";
             break;
         case REMOVE_ERROR:
-            ss << "Couldn't remove elem.";
+            ss << "Elem was not removed.";
             break;
         default:
-            ss << "Unknown error.";
-        
-        if (this->_msg.size() > 1) {
-            ss << " Msg: " << this->_msg;
-        }
-        
+            ss << "Unknown error.";    
     }
-    
+
+    if (!this->_msg.empty()) {
+        ss << " Msg: " << this->_msg;
+    }
+
     return ss.str();
 }

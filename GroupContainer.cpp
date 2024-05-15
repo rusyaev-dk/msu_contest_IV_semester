@@ -14,5 +14,5 @@ size_t GroupContainer::hash_function(void* key, size_t keySize) {
         hash ^= (size_t)data[i];
         hash *= _FNV_PRIME;
     }
-    return hash % this->_container_size;
+    return hash % this->_data_array_size;
 }
