@@ -22,7 +22,9 @@ public:
     void test_remove(size_t elem_count);
     void test_remove_even(size_t elem_count);
     void test_duplicated_iterator();
+    void test_user_data_types();
 
+    void check_perfomance(size_t elem_count);
     void run_all_tests(size_t elem_count);
     
     ~SetTester();

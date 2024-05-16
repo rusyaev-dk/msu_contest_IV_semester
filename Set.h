@@ -17,12 +17,13 @@ private:
 public:
     class SetIterator : public AbstractSet::Iterator {
     private:
-        LinkedList1::ListIterator* _list_iterator;
         Set* _set;
+        LinkedList1::ListIterator* _list_iterator;
         
         SetIterator(Iterator* iterator, Set* set);
-        size_t _get_data_index();
-        // добавить деструктор
+        ~SetIterator();
+        size_t _get_data_arr_index();
+        
     public:
         void* getElement(size_t &size) override;
         bool hasNext() override;

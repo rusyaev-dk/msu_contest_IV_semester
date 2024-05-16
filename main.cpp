@@ -12,10 +12,12 @@ int main() {
     // std::vector<std::function<void()>> tester_functions = {
     //     // [&set_tester]() { return set_tester.test_insert(290000); },
     //     // [&set_tester]() { return set_tester.test_find(290000); },
-    //     [&set_tester]() { return set_tester.test_remove(290000); },
-    //     [&set_tester]() { return set_tester.test_remove_even(290000); },
-    //     // [&set_tester]() { return set_tester.duplicated_iterator_test(); },
- 
+    //     // [&set_tester]() { return set_tester.test_remove(290000); },
+    //     // [&set_tester]() { return set_tester.test_remove_even(290000); },
+    //     // [&set_tester]() { return set_tester.test_duplicated_iterator(); },
+    //     // [&set_tester]() { return set_tester.test_perfomance(7500000); },
+    //     [&set_tester]() { return set_tester.test_user_data_types(); },
+
     // };
 
     // for (int i = 0; i < tester_functions.size(); ++i) {

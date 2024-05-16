@@ -7,7 +7,9 @@ Set::SetIterator::SetIterator(Iterator* iterator, Set* set) : _set(set) {
     this->_list_iterator = dynamic_cast<LinkedList1::ListIterator*>(iterator);
 }
 
-size_t Set::SetIterator::_get_data_index() {
+Set::SetIterator::~SetIterator() { delete this->_list_iterator; }
+
+size_t Set::SetIterator::_get_data_arr_index() {
     size_t elem_size;
     void* elem = this->getElement(elem_size);
     if (!elem) {
@@ -23,7 +25,7 @@ void* Set::SetIterator::getElement(size_t& size) {
 bool Set::SetIterator::hasNext() {
     if (this->_list_iterator->hasNext()) return true;
 
-    for (size_t i = this->_get_data_index() + 1; i < this->_set->_data_array_size; i++) {
+    for (size_t i = this->_get_data_arr_index() + 1; i < this->_set->_data_array_size; i++) {
         bool has_non_empty_list = this->_set->_data_array[i] != nullptr && !this->_set->_data_array[i]->empty(); 
         if (has_non_empty_list) return true;
     }
@@ -32,7 +34,7 @@ bool Set::SetIterator::hasNext() {
 
 void Set::SetIterator::goToNext() {
     if (!this->_list_iterator->hasNext()) {
-        for (size_t i = this->_get_data_index() + 1; i < this->_set->_data_array_size; i++) {
+        for (size_t i = this->_get_data_arr_index() + 1; i < this->_set->_data_array_size; i++) {
             bool has_non_empty_list = this->_set->_data_array[i] != nullptr && !this->_set->_data_array[i]->empty();
             if (has_non_empty_list) {
                 this->_list_iterator = dynamic_cast<LinkedList1::ListIterator*>(this->_set->_data_array[i]->newIterator());
@@ -82,10 +84,10 @@ int Set::insert(void *elem, size_t size) {
 
     LinkedList1::Iterator* list_iter = this->_data_array[hash]->find(elem, size);
     if (list_iter) { // Element already exists
-        free(list_iter);
+        delete list_iter;
         return 1;
     }
-    free(list_iter);
+    delete list_iter;
     
     bool needs_rehash = this->_data_array[hash]->size() >= this->_rehashing_treshhold; 
     if (needs_rehash) {
@@ -129,7 +131,7 @@ void Set::_rehash_set() {
                 new_data_array[new_hash] = new LinkedList1(this->_memory);
                 if (!new_data_array[new_hash]) {
                     free(new_data_array);
-                    free(list_iter);
+                    delete list_iter;
                     this->_data_array_size = prev_data_arr_size;
                     throw Error("Memory allocation error for linked list in set rehashing.");
                 }
@@ -138,14 +140,14 @@ void Set::_rehash_set() {
             int push_err = new_data_array[new_hash]->push_front(elem, elem_size);
             if (push_err != 0) {
                 free(new_data_array);
-                free(list_iter);
+                delete list_iter;
                 this->_data_array_size = prev_data_arr_size;
                 throw Error("Couldn't push the rehashed element.");
             }
 
             list_iter->goToNext();
         }
-        free(list_iter);
+        delete list_iter;
         delete this->_data_array[i];
     }
     this->_memory.freeMem(this->_data_array);
@@ -167,7 +169,7 @@ Set::Iterator* Set::find(void *elem, size_t size) {
     void* found_elem = list_iter->getElement(found_elem_size);
     bool elems_not_matched = !(found_elem_size == size && memcmp(found_elem, elem, size) == 0);
     if (elems_not_matched) {
-        free(list_iter);
+        delete list_iter;
         return nullptr;
     }
 
@@ -191,7 +193,7 @@ void Set::remove(Iterator* iter) {
     Set::SetIterator* casted_iter = dynamic_cast<Set::SetIterator*>(iter);
     if (casted_iter->_set != this) return;
 
-    size_t index = casted_iter->_get_data_index();
+    size_t index = casted_iter->_get_data_arr_index();
     bool reached_list_end = !casted_iter->_list_iterator->hasNext();
     
     if (reached_list_end) {
