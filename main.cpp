@@ -17,7 +17,6 @@ int main() {
     //     // [&set_tester]() { return set_tester.test_duplicated_iterator(); },
     //     // [&set_tester]() { return set_tester.test_perfomance(7500000); },
     //     [&set_tester]() { return set_tester.test_user_data_types(); },
-
     // };
 
     // for (int i = 0; i < tester_functions.size(); ++i) {

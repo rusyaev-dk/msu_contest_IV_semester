@@ -4,6 +4,8 @@
 #include <functional>
 #include <vector>
 
+using ErrorCode = SetTesterException::ErrorCode;
+
 static const int _TOTAL_TESTS_COUNT = 7;
 
 SetTester::SetTester(size_t mem_bytes_size) {
@@ -31,11 +33,11 @@ void SetTester::_fill_set(size_t elem_count) {
         switch (err_code) {
             case 1:
             this->_destroy_set();
-            throw SetTesterException(DUPLICATE_INSERT_ERROR);
+            throw SetTesterException(ErrorCode::DUPLICATE_INSERT_ERROR);
 
             case 2:
             this->_destroy_set();
-            throw SetTesterException(INSERT_ERROR, "The element was not inserted.");
+            throw SetTesterException(ErrorCode::INSERT_ERROR, "The element was not inserted.");
 
             default:
             break;
@@ -44,7 +46,7 @@ void SetTester::_fill_set(size_t elem_count) {
         size_after_insert = this->_set->size();
         if (size_before_insert >= size_after_insert) {
             this->_destroy_set();
-            throw SetTesterException(INSERT_ERROR, "The size of the set was not increased after insert.");
+            throw SetTesterException(ErrorCode::INSERT_ERROR, "The size of the set was not increased after insert.");
         }
     }
 }
@@ -55,7 +57,7 @@ void SetTester::test_insert(size_t elem_count) {
     
     if (this->_set->size() != elem_count) {
         this->_destroy_set();
-        throw SetTesterException(INSERT_ERROR, "Not all elems have been inserted!");
+        throw SetTesterException(ErrorCode::INSERT_ERROR, "Not all elems have been inserted!");
     }
 
     this->_destroy_set();
@@ -73,7 +75,7 @@ void SetTester::test_insert_duplicates(size_t elem_count) {
     }
 
     this->_destroy_set();
-    throw SetTesterException(DUPLICATE_INSERT_ERROR);
+    throw SetTesterException(ErrorCode::DUPLICATE_INSERT_ERROR);
 }
 
 void SetTester::test_find(size_t elem_count) {
@@ -85,7 +87,7 @@ void SetTester::test_find(size_t elem_count) {
         iter = this->_set->find(&i, sizeof(i));
         if (!iter) {
             this->_destroy_set();
-            throw SetTesterException(ELEM_NOT_FOUND_ERROR);
+            throw SetTesterException(ErrorCode::ELEM_NOT_FOUND_ERROR);
         }
         delete iter;
     }
@@ -112,7 +114,7 @@ void SetTester::test_remove(size_t elem_count) {
         if (size_after_remove >= size_before_remove) {
             delete iter;
             this->_destroy_set();
-            throw SetTesterException(REMOVE_ERROR, "The size of the set was not decreased after remove.");
+            throw SetTesterException(ErrorCode::REMOVE_ERROR, "The size of the set was not decreased after remove.");
         }
         size_before_remove = size_after_remove;
         
@@ -121,14 +123,14 @@ void SetTester::test_remove(size_t elem_count) {
             delete iter;
             delete checking_iter;
             this->_destroy_set();
-            throw SetTesterException(REMOVE_ERROR, "The element was not deleted.");
+            throw SetTesterException(ErrorCode::REMOVE_ERROR, "The element was not deleted.");
         }
     }
     delete iter;
     
     if (!this->_set->empty()) {
         this->_destroy_set();
-        throw SetTesterException(REMOVE_ERROR, "Set is not empty but it has to...");
+        throw SetTesterException(ErrorCode::REMOVE_ERROR, "Set is not empty but it has to...");
     }
 
     this->_destroy_set();
@@ -158,7 +160,7 @@ void SetTester::test_remove_even(size_t elem_count) {
         if (size_after_remove >= size_before_remove) {
             delete iter;
             this->_destroy_set();
-            throw SetTesterException(REMOVE_ERROR, "The size of the set was not decreased after remove.");
+            throw SetTesterException(ErrorCode::REMOVE_ERROR, "The size of the set was not decreased after remove.");
         }
         size_before_remove = size_after_remove;
         
@@ -167,14 +169,14 @@ void SetTester::test_remove_even(size_t elem_count) {
             delete iter;
             delete checking_iter;
             this->_destroy_set();
-            throw SetTesterException(REMOVE_ERROR, "The element was not deleted.");
+            throw SetTesterException(ErrorCode::REMOVE_ERROR, "The element was not deleted.");
         }
     }
     delete iter;
 
     if (this->_set->size() != elem_count / 2) {        
         this->_destroy_set();
-        throw SetTesterException(REMOVE_ERROR, "Not all even elements have been removed.");
+        throw SetTesterException(ErrorCode::REMOVE_ERROR, "Not all even elements have been removed.");
     }
 
     this->_destroy_set();
@@ -188,11 +190,11 @@ void SetTester::test_duplicated_iterator() {
     switch (err_code) {
         case 1:
         this->_destroy_set();
-        throw SetTesterException(DUPLICATE_INSERT_ERROR);
+        throw SetTesterException(ErrorCode::DUPLICATE_INSERT_ERROR);
 
         case 2:
         this->_destroy_set();
-        throw SetTesterException(UNKNOWN_ERROR, "The element was not inserted.");
+        throw SetTesterException(ErrorCode::UNKNOWN_ERROR, "The element was not inserted.");
     
         default:
         break;
@@ -221,11 +223,11 @@ void SetTester::test_user_data_types() {
     switch (err_code) {
         case 1:
         this->_destroy_set();
-        throw SetTesterException(DUPLICATE_INSERT_ERROR);
+        throw SetTesterException(ErrorCode::DUPLICATE_INSERT_ERROR);
 
         case 2:
         this->_destroy_set();
-        throw SetTesterException(INSERT_ERROR, "The element was not inserted.");
+        throw SetTesterException(ErrorCode::INSERT_ERROR, "The element was not inserted.");
 
         default:
         break;
@@ -234,7 +236,7 @@ void SetTester::test_user_data_types() {
     Set::Iterator* iter = this->_set->find(&p1, sizeof(p1));
     if (!iter) {
         this->_destroy_set();
-        throw SetTesterException(ELEM_NOT_FOUND_ERROR);
+        throw SetTesterException(ErrorCode::ELEM_NOT_FOUND_ERROR);
     }
 
     this->_set->remove(iter);

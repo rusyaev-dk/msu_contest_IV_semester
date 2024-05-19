@@ -5,15 +5,16 @@
 
 using namespace std;
 
-enum ErrorCode {
-    DUPLICATE_INSERT_ERROR,
-    INSERT_ERROR,
-    ELEM_NOT_FOUND_ERROR,
-    REMOVE_ERROR,
-    UNKNOWN_ERROR,
-};
-
 class SetTesterException {
+public:
+    enum ErrorCode {
+        DUPLICATE_INSERT_ERROR,
+        INSERT_ERROR,
+        ELEM_NOT_FOUND_ERROR,
+        REMOVE_ERROR,
+        UNKNOWN_ERROR,
+    };
+
 private:
     ErrorCode _err_code;
     string _msg;

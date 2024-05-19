@@ -28,6 +28,4 @@ public:
     void run_all_tests(size_t elem_count);
     
     ~SetTester();
-
-    friend class SetTesterException;
 };

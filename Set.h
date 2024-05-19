@@ -21,8 +21,8 @@ public:
         LinkedList1::ListIterator* _list_iterator;
         
         SetIterator(Iterator* iterator, Set* set);
-        ~SetIterator();
         size_t _get_data_arr_index();
+        ~SetIterator();
         
     public:
         void* getElement(size_t &size) override;
