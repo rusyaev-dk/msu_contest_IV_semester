@@ -1,8 +1,8 @@
 #pragma once
 
 #include "MainMemoryManager.h"
-#include "SetTesterExceptions.h"
 #include "Set.h"
+#include "SetTesterExceptions.h"
 
 class SetTester {
 private:
@@ -11,6 +11,7 @@ private:
 
     void _create_set();
     void _fill_set(size_t elem_count);
+    void _validate_insertion_code(int err_code);
     void _destroy_set();
 
 public:

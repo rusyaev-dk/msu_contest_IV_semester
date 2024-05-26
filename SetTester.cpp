@@ -13,44 +13,6 @@ SetTester::SetTester(size_t mem_bytes_size) {
     this->_set = nullptr;
 }
 
-void SetTester::_create_set() {
-    if (this->_set) {
-        this->_destroy_set();
-    }
-    this->_set = new Set(*this->_mem_manager);
-}
-
-void SetTester::_destroy_set() {
-    delete this->_set;
-    this->_set = nullptr;
-}
-
-void SetTester::_fill_set(size_t elem_count) {
-    size_t size_before_insert = 0, size_after_insert;
-    for (size_t i = 0; i < elem_count; i++) {
-        int err_code = this->_set->insert(&i, sizeof(i));
-        
-        switch (err_code) {
-            case 1:
-            this->_destroy_set();
-            throw SetTesterException(ErrorCode::DUPLICATE_INSERT_ERROR);
-
-            case 2:
-            this->_destroy_set();
-            throw SetTesterException(ErrorCode::INSERT_ERROR, "The element was not inserted.");
-
-            default:
-            break;
-        }
-
-        size_after_insert = this->_set->size();
-        if (size_before_insert >= size_after_insert) {
-            this->_destroy_set();
-            throw SetTesterException(ErrorCode::INSERT_ERROR, "The size of the set was not increased after insert.");
-        }
-    }
-}
-
 void SetTester::test_insert(size_t elem_count) {
     this->_create_set();
     this->_fill_set(elem_count);
@@ -220,18 +182,7 @@ void SetTester::test_user_data_types() {
     Point p1 = { 123, -0.3423 };
 
     int err_code = this->_set->insert(&p1, sizeof(p1));
-    switch (err_code) {
-        case 1:
-        this->_destroy_set();
-        throw SetTesterException(ErrorCode::DUPLICATE_INSERT_ERROR);
-
-        case 2:
-        this->_destroy_set();
-        throw SetTesterException(ErrorCode::INSERT_ERROR, "The element was not inserted.");
-
-        default:
-        break;
-    }
+    this->_validate_insertion_code(err_code);
 
     Set::Iterator* iter = this->_set->find(&p1, sizeof(p1));
     if (!iter) {
@@ -358,6 +309,47 @@ void SetTester::run_all_tests(size_t elem_count) {
     }
 
     std::cout << "Passed " << passed_count << " of " << _TOTAL_TESTS_COUNT << " tests\n";
+}
+
+void SetTester::_create_set() {
+    if (this->_set) {
+        this->_destroy_set();
+    }
+    this->_set = new Set(*this->_mem_manager);
+}
+
+void SetTester::_fill_set(size_t elem_count) {
+    size_t size_before_insert = 0, size_after_insert;
+    for (size_t i = 0; i < elem_count; i++) {
+        int err_code = this->_set->insert(&i, sizeof(i));
+        this->_validate_insertion_code(err_code);
+
+        size_after_insert = this->_set->size();
+        if (size_before_insert >= size_after_insert) {
+            this->_destroy_set();
+            throw SetTesterException(ErrorCode::INSERT_ERROR, "The size of the set was not increased after insert.");
+        }
+    }
+}
+
+void SetTester::_validate_insertion_code(int err_code) {
+    switch (err_code) {
+        case 1:
+        this->_destroy_set();
+        throw SetTesterException(ErrorCode::DUPLICATE_INSERT_ERROR);
+
+        case 2:
+        this->_destroy_set();
+        throw SetTesterException(ErrorCode::INSERT_ERROR, "The element was not inserted.");
+
+        default:
+        break;
+    }
+}
+
+void SetTester::_destroy_set() {
+    delete this->_set;
+    this->_set = nullptr;
 }
 
 SetTester::~SetTester() {
