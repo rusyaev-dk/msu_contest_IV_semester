@@ -13,11 +13,17 @@ string SetTesterException::what() const {
         case DUPLICATE_INSERT_ERROR:
             ss << "Insert duplicate is not allowed.";
             break;
+        case INSERT_ERROR:
+            ss << "Elem was not inserted";
+            break;
         case ELEM_NOT_FOUND_ERROR:
             ss << "Elem not found.";
             break;
         case REMOVE_ERROR:
             ss << "Elem was not removed.";
+            break;
+        case CLEAR_ERROR:
+            ss << "Set was not cleared properly";
             break;
         default:
             ss << "Unknown error.";    

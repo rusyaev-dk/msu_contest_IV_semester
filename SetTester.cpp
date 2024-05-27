@@ -4,9 +4,7 @@
 #include <functional>
 #include <vector>
 
-using ErrorCode = SetTesterException::ErrorCode;
-
-static const int _TOTAL_TESTS_COUNT = 7;
+using ErrorCode = SetTesterException::ErrorCode; 
 
 SetTester::SetTester(size_t mem_bytes_size) {
     this->_mem_manager = new MainMemoryManager(mem_bytes_size);
@@ -144,23 +142,52 @@ void SetTester::test_remove_even(size_t elem_count) {
     this->_destroy_set();
 }
 
+void SetTester::test_clear(size_t elem_count) {
+    this->_create_set();
+    this->_fill_set(elem_count);
+    
+    this->_set->clear();
+    try {
+        this->_fill_set(elem_count);
+    } catch (SetTesterException& e) {
+        this->_destroy_set();
+        throw SetTesterException(ErrorCode::CLEAR_ERROR, "There are some found elems in set after it's cleaned.");
+    }
+
+    this->_set->clear();
+    Set::Iterator* iter;
+    for (size_t i = 0; i < elem_count; i++) {
+        iter = this->_set->find(&i, sizeof(i));
+        if (iter) {
+            delete iter;
+            this->_destroy_set();
+            throw SetTesterException(ErrorCode::CLEAR_ERROR, "There are some found elems in set after it's cleaned.");
+        }
+    }
+
+    this->_destroy_set();
+}
+
+void SetTester::test_iterator(size_t elem_count) {
+    this->_create_set();
+    this->_fill_set(elem_count);
+
+    Set::Iterator* iter = this->_set->newIterator();
+    size_t set_size = this->_set->size();
+    for (size_t i = 0; i < set_size; i++) {
+        iter->goToNext();
+    }
+
+    delete iter;
+    this->_destroy_set();
+}
+
 void SetTester::test_duplicated_iterator() {
     this->_create_set();
     
     size_t elem = 123;
     int err_code = this->_set->insert(&elem, sizeof(elem));
-    switch (err_code) {
-        case 1:
-        this->_destroy_set();
-        throw SetTesterException(ErrorCode::DUPLICATE_INSERT_ERROR);
-
-        case 2:
-        this->_destroy_set();
-        throw SetTesterException(ErrorCode::UNKNOWN_ERROR, "The element was not inserted.");
-    
-        default:
-        break;
-    }
+    this->_validate_insertion_code(err_code);
 
     Set::Iterator* iter_1 = this->_set->newIterator();
     Set::Iterator* iter_2 = this->_set->newIterator();
@@ -173,7 +200,7 @@ void SetTester::test_duplicated_iterator() {
     this->_destroy_set();
 }
 
-void SetTester::test_user_data_types() {
+void SetTester::test_user_data_type() {
     typedef struct Point {
         double x, y;
     } Point;
@@ -189,7 +216,6 @@ void SetTester::test_user_data_types() {
         this->_destroy_set();
         throw SetTesterException(ErrorCode::ELEM_NOT_FOUND_ERROR);
     }
-
     this->_set->remove(iter);
     
     delete iter;
@@ -237,79 +263,39 @@ void SetTester::check_perfomance(size_t elem_count) {
 }
 
 void SetTester::run_all_tests(size_t elem_count) {
+    // tests is vector containing pairs (&test_func, test_name)
+    const std::initializer_list<std::pair<std::function<void()>, std::string>> tests = {
+        {[&] { this->test_insert(elem_count); }, "Insert test"},
+        {[&] { this->test_insert_duplicates(elem_count); }, "Insert duplicates test"},
+        {[&] { this->test_find(elem_count); }, "Find test"},
+        {[&] { this->test_remove(elem_count); }, "Remove test"},
+        {[&] { this->test_remove_even(elem_count); }, "Remove even test"},
+        {[&] { this->test_clear(elem_count); }, "Clear test"},
+        {[&] { this->test_iterator(elem_count); }, "Iterator test"},
+        {[&] { this->test_duplicated_iterator(); }, "Duplicated iterator test"},
+        {[&] { this->test_user_data_type(); }, "User data type test"},
+    };
+
     int passed_count = 0;
-    try {
-        this->test_insert(elem_count);
-        std::cout << "✓ Insert test passed" << std::endl;
-        passed_count++;
-    } catch (const SetTesterException& e) {
-        std::cout << "⚠️ Insert test failed: " << e.what() << std::endl;
-    } catch (const Container::Error& e) {
-        std::cout << "⚠️ Insert test failed: " << e.msg << std::endl;
-    }
-
-    try {
-        this->test_insert_duplicates(elem_count);
-        std::cout << "✓ Insert duplicates test passed" << std::endl;
-        passed_count++;
-    } catch (const SetTesterException& e) {
-        std::cout << "⚠️ Insert duplicates test failed: " << e.what() << std::endl;
-    } catch (const Container::Error& e) {
-        std::cout << "⚠️ Insert duplicates test failed: " << e.msg << std::endl;
-    }
-
-    try {
-        this->test_find(elem_count);
-        std::cout << "✓ Find test passed" << std::endl;
-        passed_count++;
-    } catch (const SetTesterException& e) {
-        std::cout << "⚠️ Find test failed: " << e.what() << std::endl;
-    } catch (const Container::Error& e) {
-        std::cout << "⚠️ Find test failed: " << e.msg << std::endl;
-    }
-
-    try {
-        this->test_remove(elem_count);
-        std::cout << "✓ Remove test passed" << std::endl;
-        passed_count++;
-    } catch (const SetTesterException& e) {
-        std::cout << "⚠️ Remove test failed: " << e.what() << std::endl;
-    } catch (const Container::Error& e) {
-        std::cout << "⚠️ Remove test failed: " << e.msg << std::endl;
-    }
-
-    try {
-        this->test_remove_even(elem_count);
-        std::cout << "✓ Remove even test passed" << std::endl;
-        passed_count++;
-    } catch (const SetTesterException& e) {
-        std::cout << "⚠️ Remove even test failed: " << e.what() << std::endl;
-    } catch (const Container::Error& e) {
-        std::cout << "⚠️ Remove even test failed: " << e.msg << std::endl;
-    }
-
-    try {
-        this->test_duplicated_iterator();
-        std::cout << "✓ Duplicated iterator test passed" << std::endl;
-        passed_count++;
-    } catch (const SetTesterException& e) {
-        std::cout << "⚠️ Duplicated iterator test failed: " << e.what() << std::endl;
-    } catch (const Container::Error& e) {
-        std::cout << "⚠️ Duplicated iterator test failed: " << e.msg << std::endl;
-    }
+    auto run_test = [&](auto test_func, const std::string& test_name) {
+        try {
+            test_func();
+            std::cout << "✓ " << test_name << " passed" << std::endl;
+            passed_count++;
+        } catch (const SetTesterException& e) {
+            std::cout << "⚠️ " << test_name << " failed: " << e.what() << std::endl;
+        } catch (const Container::Error& e) {
+            std::cout << "⚠️ " << test_name << " failed: " << e.msg << std::endl;
+        }
+    };
     
-    try {
-        this->test_user_data_types();
-        std::cout << "✓ User data types test passed" << std::endl;
-        passed_count++;
-    } catch (const SetTesterException& e) {
-        std::cout << "⚠️ User data types test failed: " << e.what() << std::endl;
-    } catch (const Container::Error& e) {
-        std::cout << "⚠️ User data types test failed: " << e.msg << std::endl;
+    for (const auto& test : tests) {
+        run_test(test.first, test.second);
     }
 
-    std::cout << "Passed " << passed_count << " of " << _TOTAL_TESTS_COUNT << " tests\n";
+    std::cout << "Passed " << passed_count << " of " << tests.size() << " tests\n";
 }
+
 
 void SetTester::_create_set() {
     if (this->_set) {

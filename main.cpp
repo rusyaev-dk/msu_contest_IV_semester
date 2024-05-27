@@ -7,7 +7,7 @@
 
 int main() {
     SetTester set_tester = SetTester(1000000000);
-    set_tester.run_all_tests(290000);
+    set_tester.run_all_tests(290000); // 290_000 critical quantity
     
     // std::vector<std::function<void()>> tester_functions = {
     //     // [&set_tester]() { return set_tester.test_insert(290000); },
@@ -16,7 +16,9 @@ int main() {
     //     // [&set_tester]() { return set_tester.test_remove_even(290000); },
     //     // [&set_tester]() { return set_tester.test_duplicated_iterator(); },
     //     // [&set_tester]() { return set_tester.test_perfomance(7500000); },
-    //     [&set_tester]() { return set_tester.test_user_data_types(); },
+    //     // [&set_tester]() { return set_tester.test_user_data_types(); },
+    //     // [&set_tester]() { return set_tester.test_clear(10000); },
+    //     [&set_tester]() { return set_tester.check_perfomance(10000); },
     // };
 
     // for (int i = 0; i < tester_functions.size(); ++i) {

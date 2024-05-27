@@ -12,6 +12,7 @@ public:
         INSERT_ERROR,
         ELEM_NOT_FOUND_ERROR,
         REMOVE_ERROR,
+        CLEAR_ERROR,
         UNKNOWN_ERROR,
     };
 
