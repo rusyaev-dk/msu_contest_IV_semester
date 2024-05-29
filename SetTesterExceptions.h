@@ -13,6 +13,7 @@ public:
         ELEM_NOT_FOUND_ERROR,
         REMOVE_ERROR,
         CLEAR_ERROR,
+        ITERATOR_ERROR,
         UNKNOWN_ERROR,
     };
 

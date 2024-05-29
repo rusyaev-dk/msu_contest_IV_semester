@@ -23,7 +23,10 @@ string SetTesterException::what() const {
             ss << "Elem was not removed.";
             break;
         case CLEAR_ERROR:
-            ss << "Set was not cleared properly";
+            ss << "Set was not cleared properly.";
+            break;
+        case ITERATOR_ERROR:
+            ss << "Something wrong with the iterator.";
             break;
         default:
             ss << "Unknown error.";    

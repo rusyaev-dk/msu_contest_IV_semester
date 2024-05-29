@@ -19,6 +19,7 @@ size_t Set::SetIterator::_get_data_arr_index() {
 }
 
 void* Set::SetIterator::getElement(size_t& size) {
+    if (this->_set->empty() || !size || size <= 0) return nullptr;
     return this->_list_iterator->getElement(size);
 }
 
@@ -87,11 +88,10 @@ int Set::insert(void *elem, size_t size) {
         delete list_iter;
         return 1;
     }
-    delete list_iter;
     
     bool needs_rehash = this->_data_array[hash]->size() >= this->_rehashing_treshhold; 
     if (needs_rehash) {
-        std::cout << "Rehashing set...\n";
+        std::cout << "Rehashing set\n";
         this->_rehash_set();
         hash = this->hash_function(elem, size);
     }
@@ -192,10 +192,9 @@ void Set::remove(Iterator* iter) {
 
     Set::SetIterator* casted_iter = dynamic_cast<Set::SetIterator*>(iter);
     if (casted_iter->_set != this) return;
-
     size_t index = casted_iter->_get_data_arr_index();
+
     bool reached_list_end = !casted_iter->_list_iterator->hasNext();
-    
     if (reached_list_end) {
         LinkedList1::ListIterator list_iter_to_remove = *casted_iter->_list_iterator;
         iter->goToNext();
