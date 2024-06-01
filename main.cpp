@@ -36,9 +36,9 @@ void old_testing(SetTester& set_tester) {
 
 int main() {
     SetTester set_tester = SetTester(1000000000);
-    // set_tester.run_all_tests(290000);
+    set_tester.run_all_tests(290000);
     
-    old_testing(set_tester);
+    // old_testing(set_tester);
 
     return 0;
 }

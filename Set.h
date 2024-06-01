@@ -21,7 +21,7 @@ public:
         LinkedList1::ListIterator* _list_iterator;
         
         SetIterator(Iterator* iterator, Set* set);
-        size_t _get_data_arr_index();
+        size_t _get_elem_hash();
         ~SetIterator();
         
     public:
