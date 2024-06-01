@@ -3,6 +3,8 @@
 
 #include <iostream>
 
+static const int _REHASHING_THRESHOLD = 50;
+
 Set::SetIterator::SetIterator(Iterator* iterator, Set* set) : _set(set) {
     this->_list_iterator = dynamic_cast<LinkedList1::ListIterator*>(iterator);
 }
@@ -90,7 +92,7 @@ int Set::insert(void *elem, size_t size) {
         return 1;
     }
     
-    bool needs_rehash = this->_data_array[hash]->size() >= this->_rehashing_treshhold; 
+    bool needs_rehash = this->_data_array[hash]->size() >= _REHASHING_THRESHOLD; 
     if (needs_rehash) {
         std::cout << "Rehashing set\n";
         this->_rehash_set();
@@ -105,52 +107,33 @@ int Set::insert(void *elem, size_t size) {
 }
 
 void Set::_rehash_set() {
-    size_t prev_data_arr_size = this->_data_array_size;
+    this->_data_array_size *= 2; // increasing here because of hash_function
 
-    size_t new_bytes_size = sizeof(LinkedList1*) * prev_data_arr_size * 2;
+    size_t new_bytes_size = sizeof(LinkedList1*) * this->_data_array_size;
     LinkedList1** new_data_array = (LinkedList1**)this->_memory.allocMem(new_bytes_size);
     if (!new_data_array) {
         throw Error("Memory allocation error for new_data_array in set rehashing.");
     }
 
-    this->_data_array_size *= 2;
-
     for (size_t i = 0; i < this->_data_array_size; i++) {
         new_data_array[i] = nullptr;
     }
 
-    for (size_t i = 0; i < prev_data_arr_size; i++) {
+    for (size_t i = 0; i < this->_data_array_size / 2; i++) {
         if (this->_data_array[i] == nullptr) continue;
 
         LinkedList1::Iterator* list_iter = this->_data_array[i]->newIterator();
         int list_size = this->_data_array[i]->size();
 
-        for (size_t j = 0; j < list_size; j++) {
-            size_t elem_size;
-            void* elem = list_iter->getElement(elem_size);
-            size_t new_hash = this->hash_function(elem, elem_size);
-            
-            if (new_data_array[new_hash] == nullptr) {
-                new_data_array[new_hash] = new LinkedList1(this->_memory);
-                
-                if (!new_data_array[new_hash]) {
-                    free(new_data_array);
-                    delete list_iter;
-                    this->_data_array_size = prev_data_arr_size;
-                    throw Error("Memory allocation error for linked list in set rehashing.");
-                }
+        try {
+            for (size_t j = 0; j < list_size; j++) {
+                this->_rehash_single_elem(new_data_array, list_iter);
             }
-
-            int push_err = new_data_array[new_hash]->push_front(elem, elem_size);
-            if (push_err != 0) {
-                free(new_data_array);
-                delete list_iter;
-                this->_data_array_size = prev_data_arr_size;
-                throw Error("Couldn't push the rehashed element.");
-            }
-
-            list_iter->goToNext();
+        } catch (...) {
+            this->_rehash_err_cleanup(new_data_array, list_iter);
+            throw;
         }
+
         delete list_iter;
         delete this->_data_array[i];
     }
@@ -160,7 +143,31 @@ void Set::_rehash_set() {
     this->_data_array = new_data_array;
 }
 
-//
+void Set::_rehash_single_elem(LinkedList1** new_data_array, Iterator* list_iter) {
+    size_t elem_size;
+    void* elem = list_iter->getElement(elem_size);
+    size_t new_hash = this->hash_function(elem, elem_size);
+
+    if (!new_data_array[new_hash]) {
+        new_data_array[new_hash] = new LinkedList1(this->_memory);
+        if (!new_data_array[new_hash]) {
+            throw Error("Memory allocation error for linked list in set rehashing.");
+        }
+    }
+
+    int push_err = new_data_array[new_hash]->push_front(elem, elem_size);
+    if (push_err != 0) {
+        throw Error("Couldn't push the rehashed element.");
+    }
+
+    list_iter->goToNext();
+}
+
+void Set::_rehash_err_cleanup(LinkedList1** new_data_array, Iterator* list_iter) {
+    free(new_data_array);
+    delete list_iter;
+    this->_data_array_size /= 2;
+}
 
 Set::Iterator* Set::find(void *elem, size_t size) {
     if (this->empty() || !elem || size == 0) return nullptr;

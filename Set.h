@@ -13,6 +13,8 @@ private:
     size_t _elem_count;
 
     void _rehash_set();
+    void _rehash_single_elem(LinkedList1** new_data_array, Iterator* list_iter);
+    void _rehash_err_cleanup(LinkedList1** new_data_array, Iterator* list_iter);
 
 public:
     class SetIterator : public AbstractSet::Iterator {
