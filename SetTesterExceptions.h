@@ -14,6 +14,7 @@ public:
         REMOVE_ERROR,
         CLEAR_ERROR,
         ITERATOR_ERROR,
+        DATA_ERROR,
         UNKNOWN_ERROR,
     };
 
@@ -23,7 +24,6 @@ private:
     void* _elem;
 
 public:
-
     SetTesterException(ErrorCode err_code);
     SetTesterException(ErrorCode err_code, void* elem);
     SetTesterException(ErrorCode err_code, string msg);

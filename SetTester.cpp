@@ -13,7 +13,7 @@ SetTester::SetTester(size_t mem_bytes_size) {
 
 void SetTester::test_insert(size_t elem_count) {
     this->_create_set();
-    this->_fill_set_with_int(elem_count);
+    this->_fill_set_with_size_t(elem_count);
     
     if (this->_set->size() != elem_count) {
         this->_destroy_set();
@@ -25,10 +25,10 @@ void SetTester::test_insert(size_t elem_count) {
 
 void SetTester::test_insert_duplicates(size_t elem_count) {
     this->_create_set();
-    this->_fill_set_with_int(elem_count);
+    this->_fill_set_with_size_t(elem_count);
     
     try {
-        this->_fill_set_with_int(elem_count);
+        this->_fill_set_with_size_t(elem_count);
     } catch (SetTesterException& e) {
         this->_destroy_set();
         return;
@@ -40,7 +40,7 @@ void SetTester::test_insert_duplicates(size_t elem_count) {
 
 void SetTester::test_find(size_t elem_count) {
     this->_create_set();
-    this->_fill_set_with_int(elem_count);
+    this->_fill_set_with_size_t(elem_count);
 
     Set::Iterator* iter;
     for (size_t i = 0; i < elem_count; i++) {
@@ -57,7 +57,7 @@ void SetTester::test_find(size_t elem_count) {
 
 void SetTester::test_remove(size_t elem_count) {
     this->_create_set();
-    this->_fill_set_with_int(elem_count);
+    this->_fill_set_with_size_t(elem_count);
 
     Set::Iterator* iter = this->_set->newIterator();
     Set::Iterator* checking_iter = nullptr;
@@ -98,7 +98,7 @@ void SetTester::test_remove(size_t elem_count) {
 
 void SetTester::test_remove_even(size_t elem_count) {
     this->_create_set();
-    this->_fill_set_with_int(elem_count);
+    this->_fill_set_with_size_t(elem_count);
 
     Set::Iterator* iter = this->_set->newIterator();
     Set::Iterator* checking_iter = nullptr;
@@ -144,11 +144,11 @@ void SetTester::test_remove_even(size_t elem_count) {
 
 void SetTester::test_clear(size_t elem_count) {
     this->_create_set();
-    this->_fill_set_with_int(elem_count);
+    this->_fill_set_with_size_t(elem_count);
     
     this->_set->clear();
     try {
-        this->_fill_set_with_int(elem_count);
+        this->_fill_set_with_size_t(elem_count);
     } catch (SetTesterException& e) {
         this->_destroy_set();
         throw SetTesterException(ErrorCode::CLEAR_ERROR, "There are some found elems in set after it's cleaned.");
@@ -170,7 +170,7 @@ void SetTester::test_clear(size_t elem_count) {
 
 void SetTester::test_iterator_traversal(size_t elem_count) {
     this->_create_set();
-    this->_fill_set_with_int(elem_count);
+    this->_fill_set_with_size_t(elem_count);
 
     Set::Iterator* iter = this->_set->newIterator();
     size_t set_size = this->_set->size();
@@ -191,7 +191,7 @@ void SetTester::test_iterator_traversal(size_t elem_count) {
 
 void SetTester::test_iterator_after_last_elem_removal() {
     this->_create_set();
-    this->_fill_set_with_int(1);
+    this->_fill_set_with_size_t(1);
     
     Set::Iterator* iter = this->_set->newIterator();
     if (!iter) {
@@ -230,7 +230,7 @@ void SetTester::test_iterator_empty_set() {
 
 void SetTester::test_iterator_cleared_set(size_t elem_count) {
     this->_create_set();
-    this->_fill_set_with_int(elem_count);
+    this->_fill_set_with_size_t(elem_count);
 
     Set::Iterator* iter = this->_set->newIterator();
     this->_set->clear();
@@ -266,11 +266,10 @@ void SetTester::test_duplicate_iterators_removal() {
 }
 
 void SetTester::test_user_data_type() {
+    this->_create_set();
     typedef struct {
         double x, y;
     } Point;
-
-    this->_create_set();
     Point p1 = { 123, -0.3423 };
 
     int err_code = this->_set->insert(&p1, sizeof(p1));
@@ -281,8 +280,17 @@ void SetTester::test_user_data_type() {
         this->_destroy_set();
         throw SetTesterException(ErrorCode::ELEM_NOT_FOUND_ERROR);
     }
+    size_t p_size;
+    Point* p = (Point*)iter->getElement(p_size);
+
+    if (p->x != p1.x || p->y != p1.y || p_size != sizeof(Point)) {
+        delete iter;
+        this->_destroy_set();
+        throw SetTesterException(ErrorCode::DATA_ERROR, "Incorrect saving user data type.");
+    }
+
     this->_set->remove(iter);
-    
+
     delete iter;
     this->_destroy_set();
 }
@@ -366,13 +374,11 @@ void SetTester::run_all_tests(size_t elem_count) {
 }
 
 void SetTester::_create_set() {
-    if (this->_set) {
-        this->_destroy_set();
-    }
+    if (this->_set) this->_destroy_set();
     this->_set = new Set(*this->_mem_manager);
 }
 
-void SetTester::_fill_set_with_int(size_t elem_count) {
+void SetTester::_fill_set_with_size_t(size_t elem_count) {
     size_t size_before_insert = 0, size_after_insert;
     for (size_t i = 0; i < elem_count; i++) {
         int err_code = this->_set->insert(&i, sizeof(i));

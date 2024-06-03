@@ -28,6 +28,9 @@ string SetTesterException::what() const {
         case ITERATOR_ERROR:
             ss << "Something wrong with the iterator.";
             break;
+        case DATA_ERROR:
+            ss << "Set data error.";
+            break;   
         default:
             ss << "Unknown error.";    
     }

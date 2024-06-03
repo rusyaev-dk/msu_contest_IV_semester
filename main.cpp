@@ -35,8 +35,9 @@ void old_testing(SetTester& set_tester) {
 // 290_000 critical quantity
 
 int main() {
-    SetTester set_tester = SetTester(1000000000);
+    SetTester set_tester = SetTester(1000000);
     set_tester.run_all_tests(290000);
+    // set_tester.check_perfomance(1000000);
     
     // old_testing(set_tester);
 

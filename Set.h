@@ -9,7 +9,7 @@ class Set : public AbstractSet {
 private:
     LinkedList1** _data_array;
 
-    size_t _bytes_size;
+    size_t _max_bytes;
     size_t _elem_count;
 
     void _rehash_set();

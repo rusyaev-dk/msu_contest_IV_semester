@@ -12,7 +12,7 @@ Set::SetIterator::SetIterator(Iterator* iterator, Set* set) : _set(set) {
 Set::SetIterator::~SetIterator() { delete this->_list_iterator; }
 
 void* Set::SetIterator::getElement(size_t& size) {
-    if (this->_set->empty() || !size || size == 0) return nullptr;
+    if (this->_set->empty() || size == 0) return nullptr;
     return this->_list_iterator->getElement(size);
 }
 
@@ -42,6 +42,7 @@ void Set::SetIterator::goToNext() {
 }
 
 bool Set::SetIterator::equals(Iterator* right) {
+    if (!right) return false;
     Set::SetIterator* casted_right = dynamic_cast<Set::SetIterator*>(right);
     return this->_list_iterator->equals(casted_right->_list_iterator);
 }
@@ -56,8 +57,8 @@ size_t Set::SetIterator::_get_elem_hash() {
 }
 
 Set::Set(MemoryManager& mem) : AbstractSet(mem) {
-    this->_bytes_size = sizeof(LinkedList1*) * this->_data_array_size;
-    this->_data_array = (LinkedList1**)this->_memory.allocMem(this->_bytes_size);
+    this->_max_bytes = sizeof(LinkedList1*) * this->_data_array_size;
+    this->_data_array = (LinkedList1**)this->_memory.allocMem(this->_max_bytes);
     if (!this->_data_array) {
         throw Error("Memory allocation error in set constructor.");
     }
@@ -107,10 +108,10 @@ int Set::insert(void *elem, size_t size) {
 }
 
 void Set::_rehash_set() {
-    this->_data_array_size *= 2; // increasing here because of hash_function
+    this->_data_array_size *= 2; // Increases here because of hash_function
 
-    size_t new_bytes_size = sizeof(LinkedList1*) * this->_data_array_size;
-    LinkedList1** new_data_array = (LinkedList1**)this->_memory.allocMem(new_bytes_size);
+    size_t new_max_bytes = sizeof(LinkedList1*) * this->_data_array_size;
+    LinkedList1** new_data_array = (LinkedList1**)this->_memory.allocMem(new_max_bytes);
     if (!new_data_array) {
         throw Error("Memory allocation error for new_data_array in set rehashing.");
     }
@@ -139,8 +140,8 @@ void Set::_rehash_set() {
     }
     this->_memory.freeMem(this->_data_array);
 
-    this->_bytes_size = new_bytes_size;
     this->_data_array = new_data_array;
+    this->_max_bytes = new_max_bytes;
 }
 
 void Set::_rehash_single_elem(LinkedList1** new_data_array, Iterator* list_iter) {
@@ -148,7 +149,7 @@ void Set::_rehash_single_elem(LinkedList1** new_data_array, Iterator* list_iter)
     void* elem = list_iter->getElement(elem_size);
     size_t new_hash = this->hash_function(elem, elem_size);
 
-    if (!new_data_array[new_hash]) {
+    if (new_data_array[new_hash] == nullptr) {
         new_data_array[new_hash] = new LinkedList1(this->_memory);
         if (!new_data_array[new_hash]) {
             throw Error("Memory allocation error for linked list in set rehashing.");
@@ -164,12 +165,12 @@ void Set::_rehash_single_elem(LinkedList1** new_data_array, Iterator* list_iter)
 }
 
 void Set::_rehash_err_cleanup(LinkedList1** new_data_array, Iterator* list_iter) {
-    free(new_data_array);
+    this->_memory.freeMem(new_data_array);
     delete list_iter;
     this->_data_array_size /= 2;
 }
 
-Set::Iterator* Set::find(void *elem, size_t size) {
+Set::Iterator* Set::find(void* elem, size_t size) {
     if (this->empty() || !elem || size == 0) return nullptr;
 
     size_t hash = this->hash_function(elem, size);
@@ -237,7 +238,7 @@ bool Set::empty() { return this->_elem_count == 0; }
 
 int Set::size() { return this->_elem_count; }
 
-size_t Set::max_bytes() { return this->_bytes_size; }
+size_t Set::max_bytes() { return this->_max_bytes; }
 
 Set::~Set() {
     this->clear();

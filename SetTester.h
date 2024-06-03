@@ -10,7 +10,7 @@ private:
     Set* _set;
     
     void _create_set();
-    void _fill_set_with_int(size_t elem_count);
+    void _fill_set_with_size_t(size_t elem_count);
     void _validate_insertion_code(int err_code);
     void _destroy_set();
 
