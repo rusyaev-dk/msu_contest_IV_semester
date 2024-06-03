@@ -9,7 +9,7 @@ Set::SetIterator::SetIterator(Iterator* iterator, Set* set) : _set(set) {
     this->_list_iterator = dynamic_cast<LinkedList1::ListIterator*>(iterator);
 }
 
-Set::SetIterator::~SetIterator() { delete this->_list_iterator; }
+Set::SetIterator::~SetIterator() { this->_set->_memory.freeMem(this->_list_iterator); }
 
 void* Set::SetIterator::getElement(size_t& size) {
     if (this->_set->empty() || size == 0) return nullptr;
@@ -35,6 +35,7 @@ void Set::SetIterator::goToNext() {
     for (size_t i = this->_get_elem_hash() + 1; i < this->_set->_data_array_size; i++) {
         bool has_non_empty_list = this->_set->_data_array[i] != nullptr && !this->_set->_data_array[i]->empty();
         if (has_non_empty_list) {
+            this->_set->_memory.freeMem(this->_list_iterator);
             this->_list_iterator = dynamic_cast<LinkedList1::ListIterator*>(this->_set->_data_array[i]->newIterator());
             return;
         }
@@ -89,7 +90,7 @@ int Set::insert(void *elem, size_t size) {
 
     LinkedList1::Iterator* list_iter = this->_data_array[hash]->find(elem, size);
     if (list_iter) { // Element already exists
-        delete list_iter;
+        this->_memory.freeMem(list_iter);
         return 1;
     }
     
@@ -135,8 +136,9 @@ void Set::_rehash_set() {
             throw;
         }
 
-        delete list_iter;
-        delete this->_data_array[i];
+        this->_memory.freeMem(list_iter);
+        this->_data_array[i]->clear();
+        this->_memory.freeMem(this->_data_array[i]);
     }
     this->_memory.freeMem(this->_data_array);
 
@@ -166,7 +168,7 @@ void Set::_rehash_single_elem(LinkedList1** new_data_array, Iterator* list_iter)
 
 void Set::_rehash_err_cleanup(LinkedList1** new_data_array, Iterator* list_iter) {
     this->_memory.freeMem(new_data_array);
-    delete list_iter;
+    this->_memory.freeMem(list_iter);
     this->_data_array_size /= 2;
 }
 
@@ -183,7 +185,7 @@ Set::Iterator* Set::find(void* elem, size_t size) {
     void* found_elem = list_iter->getElement(found_elem_size);
     bool elems_not_matched = !(found_elem_size == size && memcmp(found_elem, elem, size) == 0);
     if (elems_not_matched) {
-        delete list_iter;
+        this->_memory.freeMem(list_iter);
         return nullptr;
     }
 
@@ -236,15 +238,11 @@ void Set::clear() {
 
 bool Set::empty() { return this->_elem_count == 0; }
 
-int Set::size() { return this->_elem_count; }
-
-size_t Set::max_bytes() { return this->_max_bytes; }
-
 Set::~Set() {
     this->clear();
     for (size_t i = 0; i < this->_data_array_size; i++) {
         if (this->_data_array[i] != nullptr) {
-            delete this->_data_array[i];
+            this->_memory.freeMem(this->_data_array[i]);
         }
     }
 

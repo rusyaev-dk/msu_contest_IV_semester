@@ -42,13 +42,13 @@ void SetTester::test_find(size_t elem_count) {
     this->_create_set();
     this->_fill_set_with_size_t(elem_count);
 
-    Set::Iterator* iter;
+    Set::SetIterator* iter;
     for (size_t i = 0; i < elem_count; i++) {
-        iter = this->_set->find(&i, sizeof(i));
+        iter = dynamic_cast<Set::SetIterator*>(this->_set->find(&i, sizeof(i)));
         if (!iter) {
             this->_destroy_set();
             throw SetTesterException(ErrorCode::ELEM_NOT_FOUND_ERROR);
-        }
+        }        
         delete iter;
     }
 
@@ -59,8 +59,8 @@ void SetTester::test_remove(size_t elem_count) {
     this->_create_set();
     this->_fill_set_with_size_t(elem_count);
 
-    Set::Iterator* iter = this->_set->newIterator();
-    Set::Iterator* checking_iter = nullptr;
+    Set::SetIterator* iter = dynamic_cast<Set::SetIterator*>(this->_set->newIterator());
+    Set::SetIterator* checking_iter = nullptr;
     size_t set_size = this->_set->size();
     size_t size_before_remove = set_size, size_after_remove;
     
@@ -78,7 +78,7 @@ void SetTester::test_remove(size_t elem_count) {
         }
         size_before_remove = size_after_remove;
         
-        checking_iter = this->_set->find(elem, elem_size);
+        checking_iter = dynamic_cast<Set::SetIterator*>(this->_set->find(elem, elem_size));
         if (checking_iter) {
             delete iter;
             delete checking_iter;
@@ -100,8 +100,8 @@ void SetTester::test_remove_even(size_t elem_count) {
     this->_create_set();
     this->_fill_set_with_size_t(elem_count);
 
-    Set::Iterator* iter = this->_set->newIterator();
-    Set::Iterator* checking_iter = nullptr;
+    Set::SetIterator* iter = dynamic_cast<Set::SetIterator*>(this->_set->newIterator());
+    Set::SetIterator* checking_iter = nullptr;
     size_t set_size = this->_set->size();
     size_t size_before_remove = set_size, size_after_remove;
 
@@ -124,7 +124,7 @@ void SetTester::test_remove_even(size_t elem_count) {
         }
         size_before_remove = size_after_remove;
         
-        checking_iter = this->_set->find(elem, elem_size);
+        checking_iter = dynamic_cast<Set::SetIterator*>(this->_set->find(elem, elem_size));
         if (checking_iter) {
             delete iter;
             delete checking_iter;
@@ -155,9 +155,9 @@ void SetTester::test_clear(size_t elem_count) {
     }
 
     this->_set->clear();
-    Set::Iterator* iter;
+    Set::SetIterator* iter;
     for (size_t i = 0; i < elem_count; i++) {
-        iter = this->_set->find(&i, sizeof(i));
+        iter = dynamic_cast<Set::SetIterator*>(this->_set->find(&i, sizeof(i)));
         if (iter) {
             delete iter;
             this->_destroy_set();
@@ -172,7 +172,7 @@ void SetTester::test_iterator_traversal(size_t elem_count) {
     this->_create_set();
     this->_fill_set_with_size_t(elem_count);
 
-    Set::Iterator* iter = this->_set->newIterator();
+    Set::SetIterator* iter = dynamic_cast<Set::SetIterator*>(this->_set->newIterator());
     size_t set_size = this->_set->size();
     for (size_t i = 0; i < set_size; i++) {
         iter->goToNext();
@@ -193,7 +193,7 @@ void SetTester::test_iterator_after_last_elem_removal() {
     this->_create_set();
     this->_fill_set_with_size_t(1);
     
-    Set::Iterator* iter = this->_set->newIterator();
+    Set::SetIterator* iter = dynamic_cast<Set::SetIterator*>(this->_set->newIterator());
     if (!iter) {
         this->_destroy_set();
         throw SetTesterException(ErrorCode::ITERATOR_ERROR, "No iterator created for non-empty set.");
@@ -215,7 +215,7 @@ void SetTester::test_iterator_empty_set() {
     this->_create_set();
 
     try {
-        Set::Iterator* iter = this->_set->newIterator();
+        Set::SetIterator* iter = dynamic_cast<Set::SetIterator*>(this->_set->newIterator());
         if (iter) {
             this->_destroy_set();
             throw SetTesterException(ErrorCode::ITERATOR_ERROR, "Created iter for empty set.");
@@ -232,7 +232,7 @@ void SetTester::test_iterator_cleared_set(size_t elem_count) {
     this->_create_set();
     this->_fill_set_with_size_t(elem_count);
 
-    Set::Iterator* iter = this->_set->newIterator();
+    Set::SetIterator* iter = dynamic_cast<Set::SetIterator*>(this->_set->newIterator());
     this->_set->clear();
 
     size_t elem_size;
@@ -254,9 +254,9 @@ void SetTester::test_duplicate_iterators_removal() {
     int err_code = this->_set->insert(&elem, sizeof(elem));
     this->_validate_insertion_code(err_code);
 
-    Set::Iterator* iter_1 = this->_set->newIterator();
-    Set::Iterator* iter_2 = this->_set->newIterator();
-
+    Set::SetIterator* iter_1 = dynamic_cast<Set::SetIterator*>(this->_set->newIterator());
+    Set::SetIterator* iter_2 = dynamic_cast<Set::SetIterator*>(this->_set->newIterator());
+   
     this->_set->remove(iter_1);
     this->_set->remove(iter_2);
  
@@ -275,7 +275,7 @@ void SetTester::test_user_data_type() {
     int err_code = this->_set->insert(&p1, sizeof(p1));
     this->_validate_insertion_code(err_code);
 
-    Set::Iterator* iter = this->_set->find(&p1, sizeof(p1));
+    Set::SetIterator* iter = dynamic_cast<Set::SetIterator*>(this->_set->find(&p1, sizeof(p1)));
     if (!iter) {
         this->_destroy_set();
         throw SetTesterException(ErrorCode::ELEM_NOT_FOUND_ERROR);
@@ -308,10 +308,10 @@ void SetTester::check_perfomance(size_t elem_count) {
     chrono::duration<double, milli> elapsed = finish - start;
     cout << "Inserted " << elem_count << " elements in " << elapsed.count() << " ms.\n";
 
-    Set::Iterator* iter;
+    Set::SetIterator* iter;
     start = chrono::high_resolution_clock::now();
     for (size_t i = 0; i < elem_count; i++) {
-        iter = this->_set->find(&i, sizeof(i));
+        iter = dynamic_cast<Set::SetIterator*>(this->_set->find(&i, sizeof(i)));
         if (iter) delete iter;
     }
     
@@ -319,7 +319,7 @@ void SetTester::check_perfomance(size_t elem_count) {
     elapsed = finish - start;
     cout << "Found " << elem_count << " elements in " << elapsed.count() << " ms.\n";
 
-    iter = this->_set->newIterator();
+    iter = dynamic_cast<Set::SetIterator*>(this->_set->newIterator());
     size_t set_size = this->_set->size();
     start = chrono::high_resolution_clock::now();
     for (size_t i = 0; i < set_size; i++) {
@@ -380,6 +380,7 @@ void SetTester::_create_set() {
 
 void SetTester::_fill_set_with_size_t(size_t elem_count) {
     size_t size_before_insert = 0, size_after_insert;
+    
     for (size_t i = 0; i < elem_count; i++) {
         int err_code = this->_set->insert(&i, sizeof(i));
         this->_validate_insertion_code(err_code);

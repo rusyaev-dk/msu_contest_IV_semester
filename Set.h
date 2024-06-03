@@ -24,13 +24,14 @@ public:
         
         SetIterator(Iterator* iterator, Set* set);
         size_t _get_elem_hash();
-        ~SetIterator();
         
     public:
         void* getElement(size_t &size) override;
         bool hasNext() override;
         void goToNext() override;
         bool equals(Iterator *right) override;
+        
+        ~SetIterator();
 
         friend class Set;
     };
@@ -46,8 +47,8 @@ public:
     void clear() override;
     
     bool empty() override;
-    int size() override;
-    size_t max_bytes() override;
+    inline int size() override { return this->_elem_count; };
+    inline size_t max_bytes() override { return this->_max_bytes; };
     
     ~Set();
 
