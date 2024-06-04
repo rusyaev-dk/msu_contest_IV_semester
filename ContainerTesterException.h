@@ -5,7 +5,7 @@
 
 using namespace std;
 
-class SetTesterException {
+class ContainerTesterException {
 public:
     enum ErrorCode {
         DUPLICATE_INSERT_ERROR,
@@ -24,10 +24,11 @@ private:
     void* _elem;
 
 public:
-    SetTesterException(ErrorCode err_code);
-    SetTesterException(ErrorCode err_code, void* elem);
-    SetTesterException(ErrorCode err_code, string msg);
-    SetTesterException(ErrorCode err_code, void* elem, string msg);
+
+    ContainerTesterException(ErrorCode err_code);
+    ContainerTesterException(ErrorCode err_code, void* elem);
+    ContainerTesterException(ErrorCode err_code, string msg);
+    ContainerTesterException(ErrorCode err_code, void* elem, string msg);
 
     string what() const;
 };

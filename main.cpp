@@ -4,9 +4,10 @@
 #include <functional>
 #include <vector>
 
-void old_testing(SetTester& set_tester) {
+void single_testing(SetTester& set_tester) {
     std::vector<std::function<void()>> tester_functions = {
-        [&set_tester]() { return set_tester.test_insert(290000); },
+        [&set_tester]() { return set_tester.test_insert(10000); },
+        // [&set_tester]() { return set_tester.test_insert_duplicates(290000); },
 
         // [&set_tester]() { return set_tester.test_find(290000); },
         
@@ -28,7 +29,7 @@ void old_testing(SetTester& set_tester) {
         try {
             tester_functions[i]();
             std::cout << "✓ Test " << i + 1 << " passed\n\n";
-        } catch (SetTesterException& e) {
+        } catch (ContainerTesterException& e) {
             std::cout << e.what() << "\n\n";
             continue;
         } catch (Container::Error& err) {
@@ -42,10 +43,10 @@ void old_testing(SetTester& set_tester) {
 
 int main() {
     SetTester set_tester = SetTester(1000000);
-    // set_tester.run_all_tests(290000);
+    set_tester.run_all_tests(290000);
     // set_tester.check_perfomance(1000000);
     
-    old_testing(set_tester);
+    // single_testing(set_tester);
 
     return 0;
 }

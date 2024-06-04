@@ -1,12 +1,13 @@
-#include "SetTesterExceptions.h"
+#include "ContainerTesterException.h"
+
 #include <sstream>
 
-SetTesterException::SetTesterException(ErrorCode err_code): _err_code(err_code), _elem(nullptr), _msg("") {}
-SetTesterException::SetTesterException(ErrorCode err_code, void* elem): _err_code(err_code), _elem(elem), _msg("") {}
-SetTesterException::SetTesterException(ErrorCode err_code, string msg): _err_code(err_code), _elem(nullptr), _msg(msg) {}
-SetTesterException::SetTesterException(ErrorCode err_code, void* elem, string msg): _err_code(err_code), _elem(elem), _msg(msg) {}
+ContainerTesterException::ContainerTesterException(ErrorCode err_code): _err_code(err_code), _elem(nullptr), _msg("") {}
+ContainerTesterException::ContainerTesterException(ErrorCode err_code, void* elem): _err_code(err_code), _elem(elem), _msg("") {}
+ContainerTesterException::ContainerTesterException(ErrorCode err_code, string msg): _err_code(err_code), _elem(nullptr), _msg(msg) {}
+ContainerTesterException::ContainerTesterException(ErrorCode err_code, void* elem, string msg): _err_code(err_code), _elem(elem), _msg(msg) {}
 
-string SetTesterException::what() const {
+string ContainerTesterException::what() const {
     std::stringstream ss;
     
     switch (this->_err_code) {

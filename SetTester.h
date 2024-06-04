@@ -1,31 +1,29 @@
 #pragma once
 
-#include "MainMemoryManager.h"
+#include "Mem.h"
 #include "Set.h"
-#include "SetTesterExceptions.h"
+#include "BaseContainerTester.h"
 
-class SetTester {
+class SetTester : BaseContainerTester {
 private:
-    MainMemoryManager* _mem_manager;
     Set* _set;
     
-    void _create_set();
-    void _fill_set_with_size_t(size_t elem_count);
-    void _validate_insertion_code(int err_code);
-    void _destroy_set();
+    void _create_container() override;
+    void _fill_container_with_size_t(size_t elem_count) override;
+    void _destroy_container() override;
 
 public:
-    SetTester(size_t mem_bytes_size);
+    SetTester(size_t bytes_size);
 
-    void test_insert(size_t elem_count);
+    void test_insert(size_t elem_count) override;
     void test_insert_duplicates(size_t elem_count);
     
-    void test_find(size_t elem_count);
+    void test_find(size_t elem_count) override;
     
-    void test_remove(size_t elem_count);
+    void test_remove(size_t elem_count) override;
     void test_remove_even(size_t elem_count);
     
-    void test_clear(size_t elem_count);
+    void test_clear(size_t elem_count) override;
     
     void test_iterator_traversal(size_t elem_count);
     void test_iterator_after_last_elem_removal();

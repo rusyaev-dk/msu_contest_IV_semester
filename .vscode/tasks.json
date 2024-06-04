@@ -11,7 +11,8 @@
                 "GroupContainer.cpp",
                 "Set.cpp",
                 "SetTester.cpp",
-                "SetTesterExceptions.cpp",
+                "BaseContainerTester.cpp",
+                "ContainerTesterException.cpp",
                 "-o",
                 "${fileDirname}\\${fileBasenameNoExtension}.exe"
             ],
