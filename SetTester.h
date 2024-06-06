@@ -1,6 +1,5 @@
 #pragma once
 
-#include "Mem.h"
 #include "Set.h"
 #include "BaseContainerTester.h"
 
@@ -22,13 +21,13 @@ public:
     
     void test_remove(size_t elem_count) override;
     void test_remove_even(size_t elem_count);
-    
+
     void test_clear(size_t elem_count) override;
     
     void test_iterator_traversal(size_t elem_count);
     void test_iterator_after_last_elem_removal();
+    void test_iterator_after_set_cleared(size_t elem_count);
     void test_iterator_empty_set();
-    void test_iterator_cleared_set(size_t elem_count);
     void test_duplicate_iterators_removal();
     
     void test_user_data_type();

@@ -196,7 +196,8 @@ Set::Iterator* Set::newIterator() {
     if (this->empty()) return nullptr;
     
     for (size_t i = 0; i < this->_data_array_size; i++) {
-        if (this->_data_array[i] != nullptr) {
+        bool has_non_empty_list = this->_data_array[i] != nullptr && !this->_data_array[i]->empty();
+        if (has_non_empty_list) {
             return new SetIterator(this->_data_array[i]->newIterator(), this);
         }
     }
