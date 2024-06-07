@@ -6,7 +6,7 @@ class Mem: public MemoryManager
 {
 public:
     Mem(size_t sz): MemoryManager(sz) {}
-
+    
     void* allocMem(size_t sz)
     {
         return new char[sz];

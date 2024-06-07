@@ -1,8 +1,11 @@
+#ifndef LIST_H
+#define LIST_H
 #include <iostream>
 #include "ListAbstract.h"
-
+#include "Mem.h"
 
 using namespace std;
+
 
 
 class ListNode{
@@ -26,7 +29,7 @@ class ListNode{
         return this->elem_size;
     }
 
-    ListNode* get_next(){
+    ListNode* get_next(){ 
         return this->next;
     }
 
@@ -76,9 +79,14 @@ class LinkedList:public AbstractList{
 
 
 
+    LinkedList(MemoryManager &mem) : AbstractList(mem){
+        head =NULL;
+        num_of_elems = 0;
+    }
 
-    LinkedList(MemoryManager &mem) : AbstractList(mem){}
-    ~LinkedList(){}
+
+
+    ~LinkedList();
     // Добавление элемента в начало контейнера.
     // В случае успешного добавления функция возвращает значение 0, в случае неудачи 1.
     int push_front(void *elem, size_t elemSize);
@@ -120,3 +128,5 @@ class LinkedList:public AbstractList{
     // Если контейнер пуст возвращает true, иначе false
     bool empty();
 };
+
+#endif

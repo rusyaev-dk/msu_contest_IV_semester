@@ -1,11 +1,20 @@
+
 #include <iostream>
 #include "LinkedList1.hpp"
-
+ 
 
 using namespace std;
 
-
-
+LinkedList::~LinkedList(){
+    this->clear();  
+}
+// LinkedList::LinkedList(MemoryManager &mem) : AbstractList(mem){
+// //     LinkedList* new_list = (LinkedList*)_memory.allocMem(sizeof(LinkedList));
+// //     new_list->head = NULL;
+// //     new_list->num_of_elems = 0;
+//        this->head = NULL;
+//         this->num_of_elems = 0;
+//  }
 
 void* LinkedList::ListIterator::getElement(size_t &size){
     size = sizeof(this->cur_node->get_data());
@@ -30,9 +39,12 @@ void LinkedList::ListIterator::goToNext(){
 
 
  int LinkedList::push_front(void *elem, size_t elemSize){
-    ListNode* new_node = new ListNode(elem , head , elemSize);
+    void* new_data = _memory.allocMem(sizeof(elem));
+    memcpy(new_data , elem , sizeof(elem));
+    ListNode* new_node = new ListNode(new_data, head , elemSize);
     this->head = new_node;
     num_of_elems++;
+    return 0;
  }
 
 
@@ -40,10 +52,12 @@ void LinkedList::ListIterator::goToNext(){
     if(head->get_next()){
         ListNode* buf = head;
         head = head->get_next();
+        _memory.freeMem(buf->get_data());
         delete buf;
     }
     else{
-        delete head;
+        _memory.freeMem(head->get_data());
+       delete head;
     }
     num_of_elems--;
  }
@@ -59,13 +73,16 @@ int LinkedList::insert(Iterator *iter, void *elem, size_t elemSize){
     ListIterator* list_iter = dynamic_cast<ListIterator*>(iter);
     num_of_elems++;
     if(list_iter->prev_node){
-        ListNode* new_elem = new ListNode(elem , list_iter->cur_node , elemSize );
+        void* new_data = _memory.allocMem(sizeof(elem));
+        memcpy(new_data , elem , sizeof(elem));
+        ListNode* new_elem = new ListNode(new_data , list_iter->cur_node , elemSize );
         list_iter->prev_node->change_next(new_elem);
         list_iter->cur_node = new_elem;
     }
     else{
         push_front(elem , elemSize);
     }
+    return 0;
 }
 
 
@@ -107,6 +124,8 @@ void LinkedList::remove(Iterator* iter){
     ListNode* buf = remove_iter->cur_node;
     remove_iter->prev_node->change_next(remove_iter->cur_node->get_next());
     remove_iter->cur_node = remove_iter->cur_node->get_next();
+    _memory.freeMem(buf->get_data());
+    num_of_elems--;
     delete buf;
 }
 
