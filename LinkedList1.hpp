@@ -80,7 +80,7 @@ class LinkedList:public AbstractList{
 
 
     LinkedList(MemoryManager &mem) : AbstractList(mem){
-        head =NULL;
+        head = NULL;
         num_of_elems = 0;
     }
 

@@ -39,12 +39,12 @@ void LinkedList::ListIterator::goToNext(){
 
 
  int LinkedList::push_front(void *elem, size_t elemSize){
-    void* new_data = _memory.allocMem(sizeof(elem));
-    memcpy(new_data , elem , sizeof(elem));
-    ListNode* new_node = new ListNode(new_data, head , elemSize);
-    this->head = new_node;
-    num_of_elems++;
-    return 0;
+        void* new_data = _memory.allocMem(sizeof(elem));
+        memcpy(new_data , elem , sizeof(elem));
+        ListNode* new_node = new ListNode(new_data, head , elemSize);
+        this->head = new_node;
+        num_of_elems++;
+        return 0;
  }
 
 
@@ -71,8 +71,8 @@ void* LinkedList::front(size_t &size){
 
 int LinkedList::insert(Iterator *iter, void *elem, size_t elemSize){
     ListIterator* list_iter = dynamic_cast<ListIterator*>(iter);
-    num_of_elems++;
     if(list_iter->prev_node){
+        num_of_elems++;
         void* new_data = _memory.allocMem(sizeof(elem));
         memcpy(new_data , elem , sizeof(elem));
         ListNode* new_elem = new ListNode(new_data , list_iter->cur_node , elemSize );
@@ -121,23 +121,25 @@ void LinkedList::remove(Iterator* iter){
         remove_iter->goToNext();
         pop_front();
     }
-    ListNode* buf = remove_iter->cur_node;
-    remove_iter->prev_node->change_next(remove_iter->cur_node->get_next());
-    remove_iter->cur_node = remove_iter->cur_node->get_next();
-    _memory.freeMem(buf->get_data());
-    num_of_elems--;
-    delete buf;
+    else{
+        ListNode* buf = remove_iter->cur_node;
+        remove_iter->prev_node->change_next(remove_iter->cur_node->get_next());
+        remove_iter->cur_node = remove_iter->cur_node->get_next();
+        _memory.freeMem(buf->get_data());
+        num_of_elems--;
+        delete buf;
+    }
 }
 
 
 void LinkedList::clear(){
-    while(num_of_elems--){
+    while(num_of_elems!=0){
         pop_front();
     }
 }
 
 bool LinkedList::empty(){
-    return (bool)(num_of_elems);
+    return !(bool)(num_of_elems);
 }
 
 
