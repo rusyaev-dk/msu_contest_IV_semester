@@ -14,7 +14,7 @@ public:
     // Добавление элемента в контейнер, с сответствующим ключом.
     // Если такой ключ уже есть, функция ничего не делает и возвращает 1.
     // В случае успешного добавления функция возвращает значение 0, в случае неудачи 1.
-    virtual int insertByKey(void* key, size_t keySize, void* elem, size_t elemSize) = 0;
+    virtual int insertByKey(void * key, size_t keySize, void* elem, size_t elemSize) = 0;       // ключи не повторяются
 
     // Удаление элемента с сответствующим ключом из контейнера.
     virtual void removeByKey(void* key, size_t keySize) = 0;   // в начале findByKey после remove
@@ -28,5 +28,6 @@ public:
 
     // хэш функция
     virtual size_t hash_function(void* key, size_t keySize) = 0;
+
 };
 

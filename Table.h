@@ -1,7 +1,7 @@
 #pragma once
 #include "TableAbstract.h"
 #include <iostream>
-#include "MainMemoryManager.h"
+#include "Mem.h"
 #include "List.h"
 #include "MemoryManager.h"
 
@@ -14,7 +14,6 @@ struct Node {
 };
 
 
-
 // Абстрактный класс: ассциативная таблица
 class Table :public AbstractTable
 {
@@ -25,14 +24,14 @@ private:
     int obj_count;
     
 public:
-
+    
    
     class TableIterator : public AbstractTable::Iterator {
         List::ListIterator* list_iterator;
         Table* table;
         int index;
        
-
+        size_t getIndex();
     public:
         TableIterator(Table* table, int index, Iterator* iter);
 
@@ -41,8 +40,12 @@ public:
         void goToNext();
         bool equals(Iterator* right);
         friend class Table;
+        ~TableIterator() {
+            if (list_iterator) { table->_memory.freeMem(list_iterator); }
+        }
     };
 
+    friend class TableTest;
     // конструктор
       Table(MemoryManager& mem);
 
@@ -62,7 +65,8 @@ public:
      void* at(void* key, size_t keySize, size_t& valueSize);
 
     // хэш функция
-    size_t hash_function(void* key, size_t keySize);
+     size_t hash_function(void* key, size_t keySize);
+        
 
     size_t max_bytes();
 
@@ -75,11 +79,14 @@ public:
     void clear();
     bool empty();
 
-   // void rehashing()
+    void rehashing();
     
+    void printTable();
     // деструктор
+   
     ~Table();
       
+    
 
 };
 

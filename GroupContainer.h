@@ -5,9 +5,11 @@
 class GroupContainer: public Container
 {
 protected:
-    const int arr_size= 6;
+    int arr_size = 100000;
+
 
 public:
-    GroupContainer(MemoryManager &mem): Container(mem) {}
-    //size_t hash_function(void* key, size_t keySize);
+    GroupContainer(MemoryManager& mem) : Container(mem) {}
+    size_t hash_function(void* key, size_t keySize);
+    
 };

@@ -2,8 +2,11 @@
 #include <iostream>
 #include "TableAbstract.h"
 #include "Table.h"
-#include "MainMemoryManager.h"
+#include "Mem.h"
+#include "TableTest.h"
 #include "List.h"
+#include <chrono>
+#include "ContainerTesterException.h"
 
 #define __CRTDBG_MAP_ALLOC
 #include <crtdbg.h>
@@ -13,138 +16,65 @@
 
 int main()
 {
-    //
-    setlocale(LC_ALL, "Russian");
-    
-    MainMemoryManager memoryManager(10000000); // Предположим, что у нас есть достаточно памяти
-    Table myTable(memoryManager);
+	setlocale(LC_ALL, "Russian");
+	size_t bytesSize = 10000000;
+	int numElements = 1000000;
+	Mem memoryManager(bytesSize);
+	Table myTable(memoryManager);
 
-    // Тестирование вставки элементов
-    const int numElements = 3;
-    int successes = 0;
-    for (int i = 1; i < numElements; ++i) {
-        int key = i; 
-        int value = i * 2; 
-
-        if (myTable.insertByKey(&key, sizeof(int), &value, sizeof(int)) == 0) {
-            ++successes;
-        }
-        else {
-            std::cerr << "Ошибка при вставке элемента с ключом " << key << std::endl;
-        }
-    }
-
-    std::cout << "Успешно вставлено элементов: " << successes << " из " << numElements-1 << std::endl;
-
-   // // Тестирование поиска
-    int keyToFind = 2; // Ключ, который мы будем искать
-    auto iter = myTable.findByKey(&keyToFind, sizeof(int));
-    if (iter != nullptr) {
-        std::cout << "Элемент с ключом " << keyToFind << " найден." << std::endl;
-    }
-    else {
-        std::cerr << "Элемент с ключом " << keyToFind << " не найден." << std::endl;
-    }
-
-    // Тестирование удаления
-    myTable.removeByKey(&keyToFind, sizeof(int));  // !!!!!!!!!!
-     iter = myTable.findByKey(&keyToFind, sizeof(int));
-    if (iter == nullptr) {
-        std::cout << "Элемент с ключом " << keyToFind << " успешно удален." << std::endl;
-    }
-    else {
-        std::cerr << "Ошибка при удалении элемента с ключом " << keyToFind << std::endl;
-    }
-
-   // // Тестирование доступа к элементу
-   // int* keyToAccess = new int(2); // Ключ, к элементу которого мы хотим получить доступ
-   // size_t valueSize;
-   // int* value = (int*)myTable.at(keyToAccess, sizeof(int), valueSize);
-   // if (value != nullptr) {
-   //     std::cout << "Доступ к элементу с ключом " << *keyToAccess << " получен, значение: " << *value << std::endl;
-   // }
-   // else {
-   //     std::cerr << "Не удалось получить доступ к элементу с ключом " << *keyToAccess << std::endl;
-   // }
-
-   // // Предположим, что есть корректная реализация деструкторов и освобождения памяти
-   // // Удаляем выделенную память (если это необходимо в вашей реализации)
-   // delete keyToFind;
-   // delete keyToAccess;
-    delete iter;
-    myTable.clear();
-    _CrtDumpMemoryLeaks();
-    return 0;
-    
-    //*******************************************************************************************
-    
-   // MainMemoryManager memoryManager(100); 
-   // Table* myTable = new Table(memoryManager);
-   // size_t tableSize = 0;
-   // 
-
-   // int key = 20;
-   // int elem = 2;
-   // 
-
-   // size_t keySize = sizeof(key);
-   // size_t elemSize = sizeof(elem);
-   // int hash_result = 0;
-   // size_t valueSize = 20;
-  
-
-   // int result = myTable->insertByKey(&key, keySize, &elem, elemSize);
-   // if (result == 0) {
-   //     std::cout << "Элемент успешно вставлен.\n";
-   // }
-   // else {
-   //     std::cout << "Ошибка при вставке элемента.\n";
-   // }
-   // 
-   // /*
-   // myTable->at(keyPtr, keySize, valueSize);
-
-   // myTable->removeByKey(keyPtr, keySize);*/
-
-   // Table::Iterator* iter = myTable->findByKey(&key, keySize);
-   // 
-   // if (iter != nullptr) {
-   //     std::cout << "Элемент найден.\n";
-   // }
-   // else {
-   //     std::cout << "Элемент не найден.\n";
-   // }
+	/*int a = 1;
+	int b = 2;
+	myTable.insertByKey(&a, sizeof(int), &b, sizeof(int));*/
 
 
-   // //**************************************************
-   // void* value = myTable->at(&key, keySize, valueSize);
-   // 
- 
-   // int* new_elem = static_cast<int*>(value);
-   // std::cout << "elem: " << *new_elem;
+	/*вставляем один элем
+	int a= 1;
+	int b = 2;
+	myTable.insertByKey(&a, sizeof(int), &b, sizeof(int));
 
-   // 
-   //
-   // //****************************************************
-   // 
+	вставка нескольких объектов
+	for (int i = 0; i < 100; ++i) {
+		int key = i;
+		int value = i * 2;
+		
+		myTable.insertByKey(&key, sizeof(int), &value, sizeof(int));
+	}
 
-   // Table::Iterator* new_iter = myTable->find(&elem, elemSize);
+	myTable.removeByKey(&a, sizeof(int));
 
+	auto res = myTable.findByKey(&a, sizeof(int));
+	delete res;
 
+	size_t valueSize;
+	void* value = myTable.at(&a, sizeof(int), valueSize);
 
+	auto iter = myTable.find(&b, sizeof(b));
+	delete iter;*/
+	
 
-   // myTable->remove(new_iter);
+	TableTest tester(bytesSize, numElements);
+	
+	try{
 
-   //// hash_result = myTable->hash_function(keyPtr, keySize);
-   // 
-   // 
-   // //printf("%zu", hash_result);
-   // // long long tmp = (long long)hash_result;
+	tester.test_insert( numElements);
+	tester.testRemoveByKey();
+	tester.testFindByKey();
+	tester.testAt();
+	tester.testSize();
+	tester.test_find(numElements);
+	tester.test_remove(numElements);
+	tester.test_clear(numElements);
+	tester.testEmpty();
+	}
+	catch (ContainerTesterException& e) {
+		cout << e.what() << endl;
+	}
 
-   // std::cout << "Хэш-значение ключа: " << hash_result << "\n";
-   //// _CrtDumpMemoryLeaks();
-   // return 0;
-    
+	 //delete myTable;
+	
+	
+	return 0;
+
 }
 
 

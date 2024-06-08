@@ -1,237 +1,275 @@
 #include <iostream>
 #include "Table.h"
+#include "ContainerTesterException.h"
+using ErrorCode = ContainerTesterException::ErrorCode; 
 
 
 
 Table::Table(MemoryManager& mem) : AbstractTable(mem) {
 
-	tableSize = 1000000;
-
+	tableSize = arr_size;
 	tableMemory = (List**)_memory.allocMem(tableSize * sizeof(List*));
+	if(!tableMemory){ throw(Error("Error: memory  for tableMemory is not allocated")); }
 	for (int i = 0; i < tableSize; i++) {
-		tableMemory[i] = NULL;
+		tableMemory[i] = nullptr;
 	}
 	obj_count = 0;
 }
 
 int Table::insertByKey(void* key, size_t keySize, void* elem, size_t elemSize) {
+	if (key == nullptr || elem == nullptr || keySize <= 0 || elemSize <= 0) return 1;
 	size_t index = hash_function(key, keySize);
+
+	/*cout << index << endl;
+
+	int* new_key_1 = static_cast<int*>(key);
+	int* new_elem_1 = static_cast<int*>(elem);
+	cout << "key: " << *new_key_1 << " elem: " << *new_elem_1 << endl;*/
 
 	if (tableMemory[index] == nullptr) {
 		tableMemory[index] = new List(_memory);
+		if (!tableMemory[index]){ throw(Error("Error: memory  for tableMemory[i] is not allocated")); }
 	}
 	Node* newNode = (Node*)_memory.allocMem(sizeof(Node));
-	//Node newNode = {key, keySize, elem, elemSize};
-	/*
-
-	newNode->elem = _memory.allocMem(elemSize);
-	memcpy(key, newNode->elem, elemSize);*/
+	
+	if (!newNode){ throw(Error("Error: memory  for node is not allocated")); }
 
 	newNode->key = _memory.allocMem(keySize);
 	memcpy(newNode->key, key, keySize);
 	newNode->elem = _memory.allocMem(elemSize);
 	memcpy(newNode->elem, elem, elemSize);
 
-	//newNode->key = key;
-	newNode->keySize = keySize;
-	//newNode->elem = elem;
-	newNode->elemSize = elemSize;
+	if (!newNode->key) { throw(Error("Error: memory  for node is not allocated")); }
+	if (!newNode->elem) { throw(Error("Error: memory  for node is not allocated")); }
 
-	std::cout << sizeof(Node);
-	tableMemory[index]->push_front(newNode, sizeof(Node));
+	newNode->keySize = keySize;
+	newNode->elemSize = elemSize;
+	size_t nodeSize;
+	//проверка на то что хот€т добавить ноду с уже существующим key
+	if (!tableMemory[index]->empty()) {
+		List::Iterator* list_iter = tableMemory[index]->newIterator();
+		do {
+			Node* node = static_cast<Node*>(list_iter->getElement(nodeSize));
+			if (memcmp(node->key, key, keySize) == 0) {
+				std::cout << "Ёлемент с уже существующим ключем не добавлен" << endl;
+				return 1;
+			}
+			if (!list_iter->hasNext()) {
+				break;
+			}
+			list_iter->goToNext();
+		} while (true);
+		
+		_memory.freeMem( list_iter);
+	}
+
+	
+	if(tableMemory[index]->push_front(newNode, sizeof(Node))!=0){
+		return 2;
+		//throw(Error("Error: Wrong pushing front"));
+	}
 	//******************************************
 
-	int* new_key = static_cast<int*>(newNode->key);
-	int* new_elem = static_cast<int*>(newNode->elem);
-	std::cout << "(" << *new_key << ", " << *new_elem << ") ";
-	//*******************************************
-	Table::obj_count++;
+	/*int* new_key = static_cast<int*>(newNode->key);
+	int* new_elem = static_cast<int*>(newNode->elem);*/
+	//std::cout << "(" << *new_key << ", " << *new_elem << ") ";
+
+	
+	obj_count++;
+
+
+
+
 	int count_of_nodes = 0;
 	count_of_nodes = this->tableMemory[index]->size();
-	if (count_of_nodes >= 50) {
-
-		size_t newSize = tableSize * 2;
-		List** newTableMemory = (List**)_memory.allocMem(newSize * sizeof(List*));
-		for (size_t i = 0; i < newSize; i++) {
-			newTableMemory[i] = nullptr;
-		}
-
-		for (size_t i = 0; i < tableSize; i++) {
-			if (tableMemory[i] != nullptr) {
-				List::Iterator* iter = tableMemory[i]->newIterator();
-				while (iter->hasNext()) {
-					size_t elemSize;
-					Node* node = static_cast<Node*>(iter->getElement(elemSize));
-
-					Node* newNode = (Node*)_memory.allocMem(sizeof(Node));
-
-					newNode->key = node->key;
-					newNode->keySize = node->keySize;
-					newNode->elem = node->elem;
-					newNode->elemSize = node->elemSize;
-
-					_memory.freeMem(node);
-					//_memory.freeMem(node->elem);
-					//_memory.freeMem(node->key);
-
-					size_t newIndex = hash_function(newNode->key, newNode->keySize);
-
-					if (newTableMemory[newIndex] == nullptr) {
-						newTableMemory[newIndex] = new List(_memory);
-					}
-
-					newTableMemory[newIndex]->push_front(newNode, sizeof(Node));
-
-					iter->goToNext();
-				}
-				
-				tableMemory[i]->clear();
-				delete iter;
-			}
-		}
-		this->clear();
-		_memory.freeMem(tableMemory);
-		tableMemory = newTableMemory;
-		tableSize = newSize;
+	if (count_of_nodes == 50) {
+		std::cout << "ѕерехеширование\n";
+		rehashing();
 	}
 
 	return 0;
 }
 
-void Table::removeByKey(void* key, size_t keySize) {  // удал€ем по ключу
+void Table::rehashing() {
+	size_t newSize = tableSize * 2;
+	this->arr_size *= 2;
+	List** newTableMemory = (List**)_memory.allocMem(newSize * sizeof(List*));
+	if (!newTableMemory) { throw(Error("Error: memory for newTableMemory is not allocated")); }
+	for (size_t i = 0; i < newSize; i++) {
+		newTableMemory[i] = nullptr;
+	}
 
-	size_t index = hash_function(key, keySize);
-	if (tableMemory[index] != nullptr && !tableMemory[index]->empty()) {
+	for (size_t i = 0; i < tableSize; i++) {
+		if (tableMemory[i] != nullptr) {
+			List::Iterator* iter = tableMemory[i]->newIterator();   
 
-		List::Iterator* list_iter = tableMemory[index]->newIterator();
-		Table::TableIterator* table_iter = dynamic_cast<Table::TableIterator*>(this->newIterator());
-		while (list_iter->hasNext()) {
-			size_t elemSize;
-			Node* node = dynamic_cast<Node*>(list_iter);
-			//Node* node = (Node*)(table_iter);
-			void* elem = list_iter->getElement(elemSize);    // тк класс должен иметь хот€ бы 1 виртуальный метод  ///!!!
-			//******************************************
-			int* new_key = static_cast<int*>(node->key);
-			int new_keysize = static_cast<int>(node->keySize);
-			int* new_elem = static_cast<int*>(node->elem);
-			int new_elemsize = static_cast<int>(node->elemSize);
+			do {
+				size_t elemSize;
+				Node* node = static_cast<Node*>(iter->getElement(elemSize));
 
-			int* new_key_1 = static_cast<int*>(key);
-			std::cout << "key" << *new_key << " keysize" << new_keysize << "elem" << *new_elem << " elemsize" << new_elemsize;
-			//******************************************
-			size_t size_1;
-			if (node->keySize == keySize && memcmp(node->key, key, keySize) == 0) {
-				Node* node = (Node*)(table_iter->list_iterator->getElement(size_1));
-				_memory.freeMem(node->key);
-				_memory.freeMem (node->elem);
-				this->tableMemory[index]->remove(table_iter->list_iterator);
-				return;
-			}
+				size_t newIndex = hash_function(node->key, node->keySize);
+				if (newTableMemory[newIndex] == nullptr) {
+					newTableMemory[newIndex] = new List(_memory);
+					if (!newTableMemory[newIndex]) { throw(Error("Error: memory  for newTableMemory[newIndex] is not allocated")); }
+				}
 
-			table_iter->goToNext();
+				newTableMemory[newIndex]->push_front(node, sizeof(Node));
+				if (!iter->hasNext()) {
+					break;
+				}
+				iter->goToNext();
+			} while (true);
+
+			tableMemory[i]->clear();
+
+			_memory.freeMem(iter);
 		}
 	}
-	//delete list_iter;
+	//this->clear();
+	_memory.freeMem(tableMemory);
+	tableMemory = newTableMemory;
+	tableSize = newSize;	
+}
+
+void Table::removeByKey(void* key, size_t keySize) {
+	if (key == nullptr || keySize <= 0) return;
+
+	size_t index = hash_function(key, keySize);
+	/*cout << index << endl;
+
+	int* new_key = static_cast<int*>(key);
+	
+	cout << "key: " << *new_key << endl;*/
+
+	if (tableMemory[index] != nullptr && !tableMemory[index]->empty()) {
+
+	
+
+		Table::TableIterator* table_iter = dynamic_cast<Table::TableIterator*>(findByKey(key, keySize));
+		if (!table_iter) {
+			cout << "€ не удалил !" << '\n';
+			return;
+		}
+
+		List::Iterator* list_iter = table_iter->list_iterator;
+		
+		size_t size_1;
+		Node* node = static_cast<Node*>(list_iter->getElement(size_1));
+
+		_memory.freeMem(node->key);
+		_memory.freeMem(node->elem);
+		
+		node->key = nullptr;
+		node->elem = nullptr;
+
+		this->tableMemory[index]->remove(list_iter);
+		obj_count--;
+		//delete list_iter;
+		_memory.freeMem(table_iter);
+		
+		
+		return;
+
+	}
+	else cout << "€ не удалил !" << endl;
 
 }
 
 
 // remove insert find проверки 
 Table::Iterator* Table::findByKey(void* key, size_t keySize) {
+	if (key == nullptr || keySize <= 0) return nullptr;
+
 	size_t index = hash_function(key, keySize);
+	//std::cout << "\hash " << index;
 	if (tableMemory[index] != nullptr && !tableMemory[index]->empty()) {
 
 		List::Iterator* list_iter = tableMemory[index]->newIterator();
 		Table::TableIterator* table_iter = dynamic_cast<Table::TableIterator*>(this->newIterator());
-		while (table_iter->hasNext()) {
 
+
+		do {
 			size_t elemSize;
-			Node* node = (Node*)(list_iter);    // тк класс должен иметь хот€ бы 1 виртуальный метод  ///!!!
-			
-			int* new_key = static_cast<int*>(node->key);
+
+			size_t size;
+			Node* node = static_cast<Node*>(list_iter->getElement(size));
+			/*int* new_key = static_cast<int*>(node->key);
 			int new_keysize = static_cast<int>(node->keySize);
 			int* new_elem = static_cast<int*>(node->elem);
 			int new_elemsize = static_cast<int>(node->elemSize);
 
 			int* new_key_1 = static_cast<int*>(key);
-			std::cout << "\nkey from arg: " << *new_key;
-			std::cout << "\nkey: " << *new_key << " keysize: " << new_keysize << " elem: " << *new_elem << " elemsize: " << new_elemsize << "\n";
-			// 
+			std::cout << "\nkey from arg: " << *new_key_1;
+			std::cout << "\nkey: " << *new_key << " keysize: " << new_keysize << " elem: " << *new_elem << " elemsize: " << new_elemsize << "\n";*/
 			if (node->keySize == keySize && memcmp(node->key, key, keySize) == 0) {
-				return list_iter;
-			}
-			/*if (memcmp(node->key, key, keySize) == 0) {
 				return new TableIterator(this, index, list_iter);
-			}*/
+			}
+			if (!list_iter->hasNext()) {
+				break;
+			}
 			list_iter->goToNext();
-		}
-
-		//while (list_iter->hasNext() || !tableMemory[index]->empty()) {
-		//	size_t elemSize;
-		//	//void* currentElem = list_iter->getElement(elemSize);
-		//	//Node* node = (Node*)(list_iter->getElement(elemSize));    // тк класс должен иметь хот€ бы 1 виртуальный метод
-		//	Node* node = dynamic_cast<Node*>(list_iter->getElement(elemSize));
-		//	if (node->key==key) {
-		//		return new TableIterator(this, index, list_iter);
-		//	}
-		//	/*if (memcmp(node->key, key, keySize) == 0) {
-		//		return new TableIterator(this, index, list_iter);
-		//	}*/
-		//	list_iter->goToNext();
-		//}
-
-		delete list_iter;
+		} while (true);
+		_memory.freeMem(list_iter);
+		_memory.freeMem(table_iter);
 	}
 
 	return nullptr;
 }
 
 void* Table::at(void* key, size_t keySize, size_t& valueSize) {
+	if (key == nullptr || keySize <= 0) return nullptr;
 	size_t index = hash_function(key, keySize);
+	//std::cout << "\nhash " << index;
 	size_t size;
-	if (tableMemory[index] != nullptr) {
-		List::Iterator* list_iter = tableMemory[index]->newIterator();
+	if (tableMemory[index] != nullptr && !tableMemory[index]->empty()) {
 
-		for (; list_iter->hasNext() || !tableMemory[index]->empty(); list_iter->goToNext()) {
-			Node* node = (Node*)(list_iter->getElement(size));
-			//Node* node = reinterpret_cast<Node*>(list_iter->getElement(size));
+		List::Iterator* list_iter = tableMemory[index]->newIterator();
+		Table::TableIterator* table_iter = dynamic_cast<Table::TableIterator*>(this->newIterator());
+		do {
+			size_t elemSize;
+
+			size_t size;
+			Node* node = static_cast<Node*>(list_iter->getElement(size));
+			//****************************************
+			/*int* new_key = static_cast<int*>(node->key);
+			int new_keysize = static_cast<int>(node->keySize);
+			int* new_elem = static_cast<int*>(node->elem);
+			int new_elemsize = static_cast<int>(node->elemSize);
+			int* new_key_1 = static_cast<int*>(key);
+			std::cout << "\nkey from arg: " << *new_key;
+			std::cout << "\nkey: " << *new_key << " keysize: " << new_keysize << " elem: " << *new_elem << " elemsize: " << new_elemsize << "\n";*/
+			//*****************************************************
 			if (node->keySize == keySize && memcmp(node->key, key, keySize) == 0) {
+				
 				valueSize = node->elemSize;
 				return node->elem;
-				//return node->elem;
 			}
-
-		}
+			if (!list_iter->hasNext()) {
+				break;
+			}
+			list_iter->goToNext();
+		} while (true);
+		_memory.freeMem(list_iter);
+		_memory.freeMem(table_iter);
 	}
 	return nullptr;
 }
 
 
+
 size_t Table::hash_function(void* key, size_t keySize) {
-	/*
-	const unsigned char* data = (const unsigned char*)key; int hash = 6;
-	for (size_t i = 0; i < keySize; ++i) {
-	hash = (hash << 5) ^ (hash >> 27) ^ data[i]; }
-
-	*/
-	unsigned char* data = (unsigned char*)key;
-	size_t hash = 0;
-
-	for (size_t i = 0; i < keySize; ++i) {
-		hash += data[i];
-	}
-
-	return hash % this->arr_size;
+	return GroupContainer::hash_function(key, keySize);
 }
 
+
 void* Table::TableIterator::getElement(size_t& size) {
-	
+
 	size_t nodeSize;
 	Node* node = static_cast<Node*>(this->list_iterator->getElement(nodeSize));
 
 	if (node) {
-		size = node->elemSize; 
-		return node->elem; 
+		size = node->elemSize;
+		return node->elem;
 	}
 	else {
 		size = 0;
@@ -243,8 +281,8 @@ bool Table::TableIterator::hasNext() {
 	if (list_iterator->hasNext()) {
 		return true;
 	}
-	for (int i = 0; i < this->table->arr_size; i++) {
-		if (this->table->tableMemory[i] != nullptr)  
+	for (int i = index + 1; i < this->table->arr_size; i++) {
+		if (this->table->tableMemory[i] != nullptr)
 			return true;
 	}
 	return false;
@@ -256,14 +294,13 @@ void Table::TableIterator::goToNext() {
 		return;
 	}
 
-	for (int i = index; i < this->table->arr_size; i++) {
-		if (this->table->tableMemory[i] != nullptr) {
-			List::Iterator* list_iter_tmp = table->tableMemory[index]->newIterator();
-			table->_memory.freeMem(list_iterator);
-			this->list_iterator = dynamic_cast<List::ListIterator*>(list_iter_tmp);
+
+	for (int i = index + 1; i < this->table->arr_size; i++) {
+		if (this->table->tableMemory[i] != nullptr && !table->tableMemory[i]->empty()) {
+			this->list_iterator = dynamic_cast<List::ListIterator*>(this->table->tableMemory[i]->newIterator());
+			this->index = i;
 			return;
 		}
-
 	}
 
 }
@@ -276,7 +313,6 @@ bool Table::TableIterator::equals(Iterator* right) {
 
 
 size_t Table::max_bytes() {
-
 	return _memory.size();
 }
 
@@ -286,24 +322,35 @@ int Table::size() {
 
 Table::Iterator* Table::find(void* elem, size_t size) {
 
-	for (size_t i = 0; i < tableSize; ++i) {
-		if (tableMemory[i] != nullptr && !tableMemory[i]->empty()) {
+	int flag = 0;
+	int i = 0;
+	for (i = 0; i < tableSize && flag == 0; i++) {
+		if (tableMemory[i] != nullptr && !tableMemory[i]->empty() && obj_count != 0) {
 
-			//auto listIter = tableMemory[i]->newIterator();
-			List::Iterator* listIter = tableMemory[i]->newIterator();
-			while (listIter->hasNext() || !tableMemory[i]->empty()) {
+			List::Iterator* list_iter = tableMemory[i]->newIterator();
+			Table::TableIterator* table_iter = dynamic_cast<Table::TableIterator*>(this->newIterator());
+
+			do {
 				size_t elemSize;
-				//void* currentElem = listIter->getElement(elemSize);
-				Node* node = reinterpret_cast<Node*>(listIter->getElement(elemSize));
-				if (/*elemSize == size &&*/ memcmp(node->elem, elem, size) == 0) {
+				int* new_elem = static_cast<int*>(elem);
+				int* element = static_cast<int*>(table_iter->getElement(elemSize));
+				//cout << "элемент из аргуметов: " << *new_elem << " полученный элемент: " << *element << '\n';
 
-					return new TableIterator(this, i, listIter);
+				if (elemSize == size && memcmp(element, elem, size) == 0) {
+
+					return table_iter;
+					//return new TableIterator(this, i, table_iter->list_iterator);
 				}
-				listIter->goToNext();
-			}
-			delete listIter;
+				if (table_iter->hasNext() == false) {
+					flag = 1;
+					break;
+				}
+				table_iter->goToNext();
+			} while (true);
+
 		}
 	}
+
 	return nullptr;
 }
 
@@ -311,7 +358,6 @@ Table::TableIterator::TableIterator(Table* table, int index, Table::Iterator* it
 	this->index = index;
 	this->table = table;
 	this->list_iterator = dynamic_cast<List::ListIterator*>(iter);
-
 }
 
 
@@ -327,77 +373,64 @@ Table::Iterator* Table::newIterator() {
 
 void Table::remove(Iterator* iter) {
 	size_t size;
-	//size_t index;
 
 	Table::TableIterator* table_iter = dynamic_cast<Table::TableIterator*>(iter);
 	size_t size_1;
 	Node* node = (Node*)(table_iter->list_iterator->getElement(size_1));
-	delete node->elem;
-	delete node->key;
-	tableMemory[table_iter->index]->remove(table_iter->list_iterator);
-	if (!table_iter->list_iterator->hasNext()) { iter->goToNext(); }
-
-	// добавить переход к следующему дл€ iter
-	_memory.freeMem(iter->getElement(size));
-
-
-
-	//
-	//size_t index = 0;
-	//List::Iterator* list_iter = tableMemory[index]->newIterator();
-	//Table::TableIterator* table_iter = dynamic_cast<Table::TableIterator*>(this->newIterator());
-	//while (table_iter->hasNext()) {
-	//	size_t elemSize;
-	//	Node* node = (Node*)(table_iter->getElement(elemSize));    // тк класс должен иметь хот€ бы 1 виртуальный метод  ///!!!
-
-	//	int* new_key = static_cast<int*>(node->key);
-	//	int new_keysize = static_cast<int>(node->keySize);
-	//	int* new_elem = static_cast<int*>(node->elem);
-	//	int new_elemsize = static_cast<int>(node->elemSize);
-
-
-	//	std::cout << "key" << *new_key << " keysize" << new_keysize << "elem" << *new_elem << " elemsize" << new_elemsize;
-
-	//	if (table_iter->equals(iter)) {
-
-	//		this->tableMemory[index]->remove(table_iter->list_iterator);
-	//		return;
-	//	}
-
-	//	table_iter->goToNext();
-	//	index++;
-	//	
-	//}
-
+	if (!node) return;
+		
+	_memory.freeMem(node->elem);
+	_memory.freeMem(node->key);
 	
+	
+	tableMemory[table_iter->index]->remove(table_iter->list_iterator);
+	
+	
+	/*int i = 0;
+	for (i = table_iter->index + 1; i < arr_size; i++) {
+		if (tableMemory[i] != nullptr) break;
+	}
+
+	if (!table_iter->list_iterator->hasNext()) { tableMemory[i]->newIterator(); }*/
+	
+
 }
 
 void Table::clear() {
 	if (obj_count == 0) return;
 
-	std::cout << "CLEAR" << "\n";
-
+	//std::cout << "CLEAR" << "\n";
 
 	for (size_t i = 0; i < tableSize; ++i) {
 
-		if (tableMemory[i] != nullptr) {
+		if (tableMemory[i] != nullptr && !tableMemory[i]->empty()) {
 			List::Iterator* iter = tableMemory[i]->newIterator();
-			while (iter->hasNext()) {
+			do {
 				size_t elemSize;
 				Node* node = static_cast<Node*>(iter->getElement(elemSize));
 
-				_memory.freeMem(node);
+				_memory.freeMem(node->key);
+				_memory.freeMem(node->elem);
+				
 
-				//delete tableMemory[i];
+				if (!iter->hasNext()) {
+					break;
+				}
 				iter->goToNext();
-			}
+			} while (true);
+			
+			
 			tableMemory[i]->clear();
+			_memory.freeMem(tableMemory[i]);
 			tableMemory[i] = nullptr;
-			delete iter;
+			/*dynamic_cast<Table::TableIterator*>(iter)->~TableIterator();
+			delete(iter);*/
+			_memory.freeMem(iter);
 		}
 
 	}
 
+	
 	obj_count = 0;
 
 }
@@ -409,8 +442,23 @@ bool Table::empty() {
 	return false;
 }
 
+size_t Table::TableIterator::getIndex(){
+	size_t size;
+	Node* node = static_cast<Node*>(this->list_iterator->getElement(size));
+	
+	size_t index = table->hash_function(node->key, node->keySize);
+	return index;
+}
+
+
+
+
+
+
 Table::~Table() {
 	this->clear();
 	_memory.freeMem(tableMemory);
-}
+	std::cout << "YA POCHISTIL\n";
+	
 
+}
