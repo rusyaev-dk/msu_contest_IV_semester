@@ -39,8 +39,8 @@ void LinkedList::ListIterator::goToNext(){
 
 
  int LinkedList::push_front(void *elem, size_t elemSize){
-        void* new_data = _memory.allocMem(sizeof(elem));
-        memcpy(new_data , elem , sizeof(elem));
+        void* new_data = _memory.allocMem(elemSize);
+        memcpy(new_data , elem , elemSize);
         ListNode* new_node = new ListNode(new_data, head , elemSize);
         this->head = new_node;
         num_of_elems++;
@@ -73,8 +73,8 @@ int LinkedList::insert(Iterator *iter, void *elem, size_t elemSize){
     ListIterator* list_iter = dynamic_cast<ListIterator*>(iter);
     if(list_iter->prev_node){
         num_of_elems++;
-        void* new_data = _memory.allocMem(sizeof(elem));
-        memcpy(new_data , elem , sizeof(elem));
+        void* new_data = _memory.allocMem(elemSize);
+        memcpy(new_data , elem , elemSize);
         ListNode* new_elem = new ListNode(new_data , list_iter->cur_node , elemSize );
         list_iter->prev_node->change_next(new_elem);
         list_iter->cur_node = new_elem;

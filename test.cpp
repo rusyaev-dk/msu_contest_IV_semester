@@ -14,7 +14,7 @@ int main(){
     Mem mem(max_memory);
     LinkedList test(mem);
     size_t size = 0;
-    int var_k = 1;
+    int var_k = 0;
     for(int i = 0; i < 1000 ; i++ ){
         test.push_front(&var_k , sizeof(var_k));
         var_k++;
