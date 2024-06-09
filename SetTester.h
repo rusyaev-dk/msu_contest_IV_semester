@@ -3,6 +3,8 @@
 #include "Set.h"
 #include "BaseContainerTester.h"
 
+#include <functional>
+
 class SetTester : BaseContainerTester {
 private:
     Set* _set;
@@ -10,6 +12,7 @@ private:
     void _create_container() override;
     void _fill_container_with_size_t(size_t elem_count) override;
     void _destroy_container() override;
+    void _container_traversal_with_check(size_t elem_count, function<bool(size_t)> rule);
 
 public:
     SetTester(size_t bytes_size);
@@ -24,7 +27,6 @@ public:
 
     void test_clear(size_t elem_count) override;
     
-    void test_iterator_traversal(size_t elem_count);
     void test_iterator_after_last_elem_removal();
     void test_iterator_after_set_cleared(size_t elem_count);
     void test_iterator_empty_set();

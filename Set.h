@@ -7,9 +7,13 @@ using namespace std;
 
 class Set : public AbstractSet {
 private:
+    // array of lists
     LinkedList1** _data_array;
 
+    // max container size in bytes
     size_t _max_bytes;
+
+    // actual quantity of elems in container
     size_t _elem_count;
 
     void _rehash_set();

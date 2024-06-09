@@ -11,7 +11,7 @@ protected:
     virtual void _create_container() = 0;
     virtual void _fill_container_with_size_t(size_t elem_count) = 0;
     virtual void _destroy_container() = 0;
-    
+
     void _validate_insertion_code(int err_code);
 
 public:

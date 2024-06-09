@@ -1,10 +1,10 @@
 #include "SetTester.h"
 
 #include <chrono>
-#include <functional>
 #include <vector>
 
-using ErrorCode = ContainerTesterException::ErrorCode; 
+using ErrorCode = ContainerTesterException::ErrorCode;
+using namespace std;
 
 SetTester::SetTester(size_t bytes_size) : BaseContainerTester(bytes_size) {
     this->_set = nullptr;
@@ -18,23 +18,9 @@ void SetTester::test_insert(size_t elem_count) {
         this->_destroy_container();
         throw ContainerTesterException(ErrorCode::INSERT_ERROR, "Set size was not properly increased after insetring.");
     }
-
-    Set::SetIterator* iter;
-    for (size_t i = 0; i < elem_count; i++) {
-        iter = dynamic_cast<Set::SetIterator*>(this->_set->find(&i, sizeof(i)));
-        if (!iter) {
-            this->_destroy_container();
-            throw ContainerTesterException(ErrorCode::ELEM_NOT_FOUND_ERROR, "Iterator for exact elem was not found.");
-        }
-
-        size_t elem_size;
-        size_t* elem = (size_t*)iter->getElement(elem_size);
-        delete iter;
-        if (*elem != i) {
-            this->_destroy_container();
-            throw ContainerTesterException(ErrorCode::INSERT_ERROR, "Elem was incorrectly inserted.");
-        }
-    }
+    
+    auto rule = [elem_count](size_t elem) { return (elem >= 0 && elem <= elem_count); };
+    this->_container_traversal_with_check(elem_count, rule);
 
     this->_destroy_container();
 }
@@ -46,7 +32,6 @@ void SetTester::test_insert_duplicates(size_t elem_count) {
     try {
         this->_fill_container_with_size_t(elem_count);
     } catch (ContainerTesterException& e) {
-        this->_destroy_container();
         return;
     }
 
@@ -59,6 +44,14 @@ void SetTester::test_find(size_t elem_count) {
     this->_fill_container_with_size_t(elem_count);
 
     Set::SetIterator* iter;
+    size_t uninserted_elem = elem_count + 1;
+    iter = dynamic_cast<Set::SetIterator*>(this->_set->find(&uninserted_elem, sizeof(uninserted_elem)));
+    if (iter) {
+        delete iter;
+        this->_destroy_container();
+        throw ContainerTesterException(ErrorCode::DATA_ERROR, "Found uninserted elem in set.");
+    }
+
     for (size_t i = 0; i < elem_count; i++) {
         iter = dynamic_cast<Set::SetIterator*>(this->_set->find(&i, sizeof(i)));
         if (!iter) {
@@ -136,20 +129,9 @@ void SetTester::test_remove_even(size_t elem_count) {
         throw ContainerTesterException(ErrorCode::REMOVE_ERROR, "Set size was not correctly decreased after removal.");
     }
 
-    Set::SetIterator* checking_iter = dynamic_cast<Set::SetIterator*>(this->_set->newIterator());
-    for (size_t i = 0; i < elem_count; i++) {
-        size_t elem_size;
-        size_t* elem = (size_t*)checking_iter->getElement(elem_size);
-
-        bool elem_is_even = (*elem % 2 == 0);
-        if (elem_is_even) {
-            delete checking_iter;
-            this->_destroy_container();
-            throw ContainerTesterException(ErrorCode::REMOVE_ERROR, "Not all even elements have been removed.");
-        }
-    }
-
-    delete checking_iter;
+    auto rule = [elem_count](size_t elem) { return ((elem > 0 && elem <= elem_count) && (elem % 2 != 0)); };
+    this->_container_traversal_with_check(elem_count, rule);
+    
     this->_destroy_container();
 }
 
@@ -179,27 +161,6 @@ void SetTester::test_clear(size_t elem_count) {
     this->_destroy_container();
 }
 
-void SetTester::test_iterator_traversal(size_t elem_count) {
-    this->_create_container();
-    this->_fill_container_with_size_t(elem_count);
-
-    Set::SetIterator* iter = dynamic_cast<Set::SetIterator*>(this->_set->newIterator());
-    size_t set_size = this->_set->size();
-    for (size_t i = 0; i < set_size; i++) {
-        iter->goToNext();
-        size_t elem_size;
-        void* elem = iter->getElement(elem_size);
-        if (!elem) {
-            delete iter;
-            this->_destroy_container();
-            throw ContainerTesterException(ErrorCode::ITERATOR_ERROR, "Address of elem is null.");
-        }
-    }
-
-    delete iter;
-    this->_destroy_container();
-}
-
 void SetTester::test_iterator_after_last_elem_removal() {
     this->_create_container();
     this->_fill_container_with_size_t(1);
@@ -212,13 +173,12 @@ void SetTester::test_iterator_after_last_elem_removal() {
     this->_set->remove(iter);
     size_t elem_size;
     void* elem = iter->getElement(elem_size);
+    delete iter;
     if (elem) {
-        delete iter;
         this->_destroy_container();
         throw ContainerTesterException(ErrorCode::ITERATOR_ERROR, "Iterator has elem after removing last elem in set.");
     }
-
-    delete iter;    
+    
     this->_destroy_container();
 }
 
@@ -228,6 +188,7 @@ void SetTester::test_iterator_empty_set() {
     try {
         Set::SetIterator* iter = dynamic_cast<Set::SetIterator*>(this->_set->newIterator());
         if (iter) {
+            delete iter;
             this->_destroy_container();
             throw ContainerTesterException(ErrorCode::ITERATOR_ERROR, "Created iter for empty set.");
         }
@@ -316,7 +277,6 @@ void SetTester::test_user_data_type() {
 }
 
 void SetTester::check_perfomance(size_t elem_count) {
-    using namespace std;
     this->_create_container();
     
     auto start = chrono::high_resolution_clock::now();
@@ -365,7 +325,6 @@ void SetTester::run_all_tests(size_t elem_count) {
         {[&] { this->test_remove(elem_count); }, "Remove test"},
         {[&] { this->test_remove_even(elem_count); }, "Remove even test"},
         {[&] { this->test_clear(elem_count); }, "Clear test"},
-        {[&] { this->test_iterator_traversal(elem_count); }, "Iterator traversal test"},
         {[&] { this->test_iterator_after_last_elem_removal(); }, "Iterator last elem removal test"},
         {[&] { this->test_iterator_after_set_cleared(elem_count); }, "Iterator cleared set test"},
         {[&] { this->test_iterator_empty_set(); }, "Iterator empty set test"},
@@ -413,6 +372,50 @@ void SetTester::_fill_container_with_size_t(size_t elem_count) {
     }
 }
 
+void SetTester::_container_traversal_with_check(size_t elem_count, function<bool(size_t)> rule) {
+    vector<pair<size_t, bool>> elements_to_view(elem_count);
+    for (size_t i = 0; i < elem_count; i++) {
+        elements_to_view[i] = make_pair(i, false);
+    }
+
+    Set::SetIterator* iter = dynamic_cast<Set::SetIterator*>(this->_set->newIterator());
+    size_t set_size = this->_set->size();
+    try {
+        for (size_t i = 0; i < set_size; i++) {
+            size_t elem_size, index;
+            size_t* elem = (size_t*)iter->getElement(elem_size);
+            index = *elem;
+
+            if (!elem) {
+                throw ContainerTesterException(ErrorCode::ITERATOR_ERROR, "Address of elem is null.");
+            }
+
+            if (!rule(*elem)) {
+                throw ContainerTesterException(ErrorCode::DATA_ERROR, "The element that does not match the rule remains.");
+            }
+
+            if (elements_to_view[index].second) {        
+                throw ContainerTesterException(ErrorCode::DUPLICATE_INSERT_ERROR, "Duplicate elements in set.");
+            }
+
+            elements_to_view[index].second = true;
+            iter->goToNext();
+            elem = nullptr;
+        }
+        delete iter;
+    } catch (const ContainerTesterException& e) {
+        delete iter;
+        this->_destroy_container();
+        throw;
+    }
+    
+    for (size_t i = 0; i < elem_count; i++) {
+        if (!elements_to_view[i].second && rule(i)) {
+            throw ContainerTesterException(ErrorCode::DATA_ERROR, "Not all elements were found.");
+        }
+    }
+}
+
 void SetTester::_destroy_container() {
     if (!this->_set) return;
     delete this->_set;
@@ -421,5 +424,4 @@ void SetTester::_destroy_container() {
 
 SetTester::~SetTester() {
     delete this->_set;
-    // ~BaseContainerTester();
 }

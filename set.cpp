@@ -6,7 +6,7 @@
 static const int _REHASHING_THRESHOLD = 50;
 
 Set::SetIterator::SetIterator(Iterator* iterator, Set* set) : _set(set) {
-    this->_list_iterator = dynamic_cast<LinkedList1::ListIterator*>(iterator);
+    this->_list_iterator = static_cast<LinkedList1::ListIterator*>(iterator);
 }
 
 Set::SetIterator::~SetIterator() { this->_set->_memory.freeMem(this->_list_iterator); }
@@ -36,7 +36,7 @@ void Set::SetIterator::goToNext() {
         bool has_non_empty_list = this->_set->_data_array[i] != nullptr && !this->_set->_data_array[i]->empty();
         if (has_non_empty_list) {
             this->_set->_memory.freeMem(this->_list_iterator);
-            this->_list_iterator = dynamic_cast<LinkedList1::ListIterator*>(this->_set->_data_array[i]->newIterator());
+            this->_list_iterator = static_cast<LinkedList1::ListIterator*>(this->_set->_data_array[i]->newIterator());
             return;
         }
     }
@@ -44,7 +44,7 @@ void Set::SetIterator::goToNext() {
 
 bool Set::SetIterator::equals(Iterator* right) {
     if (!right) return false;
-    Set::SetIterator* casted_right = dynamic_cast<Set::SetIterator*>(right);
+    Set::SetIterator* casted_right = static_cast<Set::SetIterator*>(right);
     return this->_list_iterator->equals(casted_right->_list_iterator);
 }
 
@@ -52,7 +52,7 @@ size_t Set::SetIterator::_get_elem_hash() {
     size_t elem_size;
     void* elem = this->getElement(elem_size);
     if (!elem) {
-        throw Error("Elem in set iterator is null.");
+        throw Error("Elem in active set iterator is null.");
     }
     return this->_set->hash_function(elem, elem_size);
 }
@@ -109,7 +109,7 @@ int Set::insert(void *elem, size_t size) {
 }
 
 void Set::_rehash_set() {
-    this->_data_array_size *= 2; // Increases here because of hash_function
+    this->_data_array_size *= 2; // Increases here because of hash_function computing
 
     size_t new_max_bytes = sizeof(LinkedList1*) * this->_data_array_size;
     LinkedList1** new_data_array = (LinkedList1**)this->_memory.allocMem(new_max_bytes);
@@ -167,8 +167,15 @@ void Set::_rehash_single_elem(LinkedList1** new_data_array, Iterator* list_iter)
 }
 
 void Set::_rehash_err_cleanup(LinkedList1** new_data_array, Iterator* list_iter) {
-    this->_memory.freeMem(new_data_array);
+    for (size_t i = 0; i < this->_data_array_size; i++) {
+        if (new_data_array[i] == nullptr) continue;
+
+        new_data_array[i]->clear();
+        this->_memory.freeMem(new_data_array[i]);
+    }
+
     this->_memory.freeMem(list_iter);
+    this->_memory.freeMem(new_data_array);
     this->_data_array_size /= 2;
 }
 
@@ -205,9 +212,9 @@ Set::Iterator* Set::newIterator() {
 }
 
 void Set::remove(Iterator* iter) {
-    if (this->empty()) return;
+    if (this->empty() || !iter) return;
 
-    Set::SetIterator* casted_iter = dynamic_cast<Set::SetIterator*>(iter);
+    Set::SetIterator* casted_iter = static_cast<Set::SetIterator*>(iter);
     if (casted_iter->_set != this) return;
     size_t hash = casted_iter->_get_elem_hash();
 
