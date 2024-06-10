@@ -6,37 +6,22 @@
 static const int _REHASHING_THRESHOLD = 50;
 
 Set::SetIterator::SetIterator(Iterator* iterator, Set* set) : _set(set) {
-    this->_list_iterator = static_cast<LinkedList1::ListIterator*>(iterator);
+    this->_list_iter = static_cast<LinkedList1::ListIterator*>(iterator);
 }
 
-Set::SetIterator::~SetIterator() { this->_set->_memory.freeMem(this->_list_iterator); }
-
-void* Set::SetIterator::getElement(size_t& size) {
-    if (this->_set->empty() || size == 0) return nullptr;
-    return this->_list_iterator->getElement(size);
-}
-
-bool Set::SetIterator::hasNext() {
-    if (this->_list_iterator->hasNext()) return true;
-
-    for (size_t i = this->_get_elem_hash() + 1; i < this->_set->_data_array_size; i++) {
-        bool has_non_empty_list = this->_set->_data_array[i] != nullptr && !this->_set->_data_array[i]->empty(); 
-        if (has_non_empty_list) return true;
-    }
-    return false;
-}
+Set::SetIterator::~SetIterator() { this->_set->_memory.freeMem(this->_list_iter); }
 
 void Set::SetIterator::goToNext() {
-    if (this->_list_iterator->hasNext()) {
-        this->_list_iterator->goToNext();
+    if (this->_list_iter->hasNext()) {
+        this->_list_iter->goToNext();
         return;
     }
     
     for (size_t i = this->_get_elem_hash() + 1; i < this->_set->_data_array_size; i++) {
         bool has_non_empty_list = this->_set->_data_array[i] != nullptr && !this->_set->_data_array[i]->empty();
         if (has_non_empty_list) {
-            this->_set->_memory.freeMem(this->_list_iterator);
-            this->_list_iterator = static_cast<LinkedList1::ListIterator*>(this->_set->_data_array[i]->newIterator());
+            this->_set->_memory.freeMem(this->_list_iter);
+            this->_list_iter = static_cast<LinkedList1::ListIterator*>(this->_set->_data_array[i]->newIterator());
             return;
         }
     }
@@ -45,30 +30,7 @@ void Set::SetIterator::goToNext() {
 bool Set::SetIterator::equals(Iterator* right) {
     if (!right) return false;
     Set::SetIterator* casted_right = static_cast<Set::SetIterator*>(right);
-    return this->_list_iterator->equals(casted_right->_list_iterator);
-}
-
-size_t Set::SetIterator::_get_elem_hash() {
-    size_t elem_size;
-    void* elem = this->getElement(elem_size);
-    if (!elem) {
-        throw Error("Elem in active set iterator is null.");
-    }
-    return this->_set->hash_function(elem, elem_size);
-}
-
-Set::Set(MemoryManager& mem) : AbstractSet(mem) {
-    this->_max_bytes = sizeof(LinkedList1*) * this->_data_array_size;
-    this->_data_array = (LinkedList1**)this->_memory.allocMem(this->_max_bytes);
-    if (!this->_data_array) {
-        throw Error("Memory allocation error in set constructor.");
-    }
-
-    for (size_t i = 0; i < this->_data_array_size; i++) {
-        this->_data_array[i] = nullptr;
-    }
-
-    this->_elem_count = 0;
+    return this->_list_iter->equals(casted_right->_list_iter);
 }
 
 int Set::insert(void *elem, size_t size) {
@@ -218,13 +180,13 @@ void Set::remove(Iterator* iter) {
     if (casted_iter->_set != this) return;
     size_t hash = casted_iter->_get_elem_hash();
 
-    bool reached_list_end = !casted_iter->_list_iterator->hasNext();
+    bool reached_list_end = !casted_iter->_list_iter->hasNext();
     if (reached_list_end) {
-        LinkedList1::ListIterator list_iter_to_remove = *casted_iter->_list_iterator;
+        LinkedList1::ListIterator list_iter_to_remove = *casted_iter->_list_iter;
         iter->goToNext();
         this->_data_array[hash]->remove(&list_iter_to_remove);
     } else {
-        this->_data_array[hash]->remove(casted_iter->_list_iterator);
+        this->_data_array[hash]->remove(casted_iter->_list_iter);
     }
 
     this->_elem_count -= 1;
@@ -243,8 +205,6 @@ void Set::clear() {
     this->_elem_count = 0;
     std::cout << "Set cleared\n";
 }
-
-bool Set::empty() { return this->_elem_count == 0; }
 
 Set::~Set() {
     this->clear();

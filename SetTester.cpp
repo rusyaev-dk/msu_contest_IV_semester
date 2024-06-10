@@ -318,7 +318,7 @@ void SetTester::check_perfomance(size_t elem_count) {
 
 void SetTester::run_all_tests(size_t elem_count) {
     // tests is vector containing pairs (&test_func, test_name)
-    const std::initializer_list<std::pair<std::function<void()>, std::string>> tests = {
+    const initializer_list<pair<function<void()>, string>> tests = {
         {[&] { this->test_insert(elem_count); }, "Insert test"},
         {[&] { this->test_insert_duplicates(elem_count); }, "Insert duplicates test"},
         {[&] { this->test_find(elem_count); }, "Find test"},
@@ -333,15 +333,15 @@ void SetTester::run_all_tests(size_t elem_count) {
     };
 
     int passed_count = 0;
-    auto run_test = [&](auto test_func, const std::string& test_name) {
+    auto run_test = [&](auto test_func, const string& test_name) {
         try {
             test_func();
-            std::cout << "✓ " << test_name << " passed" << std::endl;
+            cout << "✓ " << test_name << " passed\n\n";
             passed_count++;
         } catch (const ContainerTesterException& e) {
-            std::cout << "⚠️ " << test_name << " failed: " << e.what() << std::endl;
+            cout << "⚠️ " << test_name << " failed: " << e.what() << "\n\n";
         } catch (const Container::Error& e) {
-            std::cout << "⚠️ " << test_name << " failed: " << e.msg << std::endl;
+            cout << "⚠️ " << test_name << " failed: " << e.msg << "\n\n";
         }
     };
     
@@ -349,7 +349,7 @@ void SetTester::run_all_tests(size_t elem_count) {
         run_test(test.first, test.second);
     }
 
-    std::cout << "Passed " << passed_count << " of " << tests.size() << " tests." << std::endl;
+    cout << "Passed " << passed_count << " of " << tests.size() << " tests." << "\n";
 }
 
 void SetTester::_create_container() {

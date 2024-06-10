@@ -38,8 +38,6 @@ void single_testing(SetTester& set_tester) {
     }
 }
 
-// 290_000 critical quantity
-
 int main() {
     SetTester set_tester = SetTester(1000000);
     set_tester.run_all_tests(290000);
