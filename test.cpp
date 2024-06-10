@@ -12,7 +12,7 @@ using namespace std;
 int main(){
     int max_memory = 100*MILL;
     Mem mem(max_memory);
-    LinkedList test(mem);
+    List test(mem);
     size_t size = 0;
     int var_k = 0;
     for(int i = 0; i < 1000 ; i++ ){
@@ -32,5 +32,6 @@ int main(){
             cout << value << endl;
         }
     }
+    test.clear();
     cout << test.size() << endl;
 }

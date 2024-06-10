@@ -40,7 +40,7 @@ class ListNode{
 
 
 
-class LinkedList:public AbstractList{
+class List:public AbstractList{
     private:
     ListNode* head;
     int num_of_elems;
@@ -74,19 +74,19 @@ class LinkedList:public AbstractList{
         bool equals(Iterator *right);
 
         friend class ListNode;
-        friend class LinkedList;
+        friend class List;
     };
 
 
 
-    LinkedList(MemoryManager &mem) : AbstractList(mem){
+    List(MemoryManager &mem) : AbstractList(mem){
         head = NULL;
         num_of_elems = 0;
     }
 
 
 
-    ~LinkedList();
+    ~List();
     // Добавление элемента в начало контейнера.
     // В случае успешного добавления функция возвращает значение 0, в случае неудачи 1.
     int push_front(void *elem, size_t elemSize);

@@ -5,40 +5,40 @@
 
 using namespace std;
 
-LinkedList::~LinkedList(){
+List::~List(){
     this->clear();  
 }
-// LinkedList::LinkedList(MemoryManager &mem) : AbstractList(mem){
-// //     LinkedList* new_list = (LinkedList*)_memory.allocMem(sizeof(LinkedList));
+// List::List(MemoryManager &mem) : AbstractList(mem){
+// //     List* new_list = (List*)_memory.allocMem(sizeof(List));
 // //     new_list->head = NULL;
 // //     new_list->num_of_elems = 0;
 //        this->head = NULL;
 //         this->num_of_elems = 0;
 //  }
 
-void* LinkedList::ListIterator::getElement(size_t &size){
+void* List::ListIterator::getElement(size_t &size){
     size = sizeof(this->cur_node->get_data());
     return this->cur_node->get_data();
 }
 
-bool LinkedList::ListIterator::hasNext(){
+bool List::ListIterator::hasNext(){
     return (bool)(this->cur_node->get_next());
 }
 
-void LinkedList::ListIterator::goToNext(){
+void List::ListIterator::goToNext(){
     if(this->hasNext()){
         this->prev_node = cur_node;
         this->cur_node = this->cur_node->get_next();
     }
 }
 
- bool LinkedList::ListIterator::equals(Iterator *right){
+ bool List::ListIterator::equals(Iterator *right){
     ListIterator* list_right = dynamic_cast<ListIterator*>(right);
     return (bool)(this==list_right);
  }
 
 
- int LinkedList::push_front(void *elem, size_t elemSize){
+ int List::push_front(void *elem, size_t elemSize){
         void* new_data = _memory.allocMem(elemSize);
         memcpy(new_data , elem , elemSize);
         ListNode* new_node = new ListNode(new_data, head , elemSize);
@@ -48,7 +48,7 @@ void LinkedList::ListIterator::goToNext(){
  }
 
 
- void LinkedList::pop_front(){
+ void List::pop_front(){
     if(head->get_next()){
         ListNode* buf = head;
         head = head->get_next();
@@ -63,13 +63,13 @@ void LinkedList::ListIterator::goToNext(){
  }
 
 
-void* LinkedList::front(size_t &size){
+void* List::front(size_t &size){
     size = head->get_size();
     return head->get_data();
 }
 
 
-int LinkedList::insert(Iterator *iter, void *elem, size_t elemSize){
+int List::insert(Iterator *iter, void *elem, size_t elemSize){
     ListIterator* list_iter = dynamic_cast<ListIterator*>(iter);
     if(list_iter->prev_node){
         num_of_elems++;
@@ -87,21 +87,21 @@ int LinkedList::insert(Iterator *iter, void *elem, size_t elemSize){
 
 
 
-size_t LinkedList::max_bytes(){
+size_t List::max_bytes(){
     return 0;
 }
 
 
-int LinkedList::size(){
+int List::size(){
     return num_of_elems;
 }
 
 
-Container::Iterator* LinkedList::newIterator(){
+Container::Iterator* List::newIterator(){
     return new ListIterator(head , NULL);
 }
 
-Container::Iterator* LinkedList::find(void *elem, size_t size){
+Container::Iterator* List::find(void *elem, size_t size){
     ListIterator* find_iter = dynamic_cast<ListIterator*>(newIterator());
     while(find_iter->hasNext()){
         if(find_iter->cur_node->get_data() == elem){
@@ -115,7 +115,7 @@ Container::Iterator* LinkedList::find(void *elem, size_t size){
 
 
 
-void LinkedList::remove(Iterator* iter){
+void List::remove(Iterator* iter){
     ListIterator* remove_iter = dynamic_cast<ListIterator*>(iter);
     if(remove_iter->prev_node==NULL){
         remove_iter->goToNext();
@@ -132,13 +132,13 @@ void LinkedList::remove(Iterator* iter){
 }
 
 
-void LinkedList::clear(){
+void List::clear(){
     while(num_of_elems!=0){
         pop_front();
     }
 }
 
-bool LinkedList::empty(){
+bool List::empty(){
     return !(bool)(num_of_elems);
 }
 
