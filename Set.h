@@ -3,6 +3,7 @@
 #include "SetAbstract.h"
 
 using namespace std;
+using IteratorUtils = GroupContainer::IteratorUtils;
 
 class Set : public AbstractSet {
 private:
@@ -17,17 +18,18 @@ public:
         LinkedList1::ListIterator* _list_iter;
         
         SetIterator(Iterator* iterator, Set* set);
-        inline size_t _get_elem_hash() { return _set->_iter_get_elem_hash(_list_iter); };
+        size_t _get_elem_hash() { return IteratorUtils::get_elem_hash(_set, _list_iter); };
         
     public:
-        inline void* getElement(size_t &size) override { return _set->_iterGetElement(size, _list_iter); };
-        inline bool hasNext() override { return _set->_iterHasNext(_list_iter); };
-        void goToNext() override;
-        bool equals(Iterator *right) override;
+        void* getElement(size_t &size) override { return IteratorUtils::getElement(size, _set, _list_iter); };
+        bool hasNext() override { return IteratorUtils::hasNext(_set, _list_iter); };
+        void goToNext() override { IteratorUtils::goToNext(_set, _list_iter); };
+        bool equals(Iterator *right) override { return IteratorUtils::equals<SetIterator>(this, static_cast<SetIterator*>(right)); };
         
         ~SetIterator();
 
         friend class Set;
+        friend class IteratorUtils;
     };
 
     Set(MemoryManager &mem): AbstractSet(mem) {};
@@ -40,7 +42,7 @@ public:
     void remove(Iterator *iter) override;
     void clear() override;
     
-    inline bool empty() override {return _empty(); };
+    inline bool empty() override { return _empty(); };
     inline int size() override { return _size(); };
     inline size_t max_bytes() override { return _get_max_bytes(); };
     

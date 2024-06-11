@@ -3,35 +3,17 @@
 
 #include <iostream>
 
+using namespace std;
+using ListIterator = LinkedList1::ListIterator;
+using SetIterator = Set::SetIterator;
+
 static const int _REHASHING_THRESHOLD = 50;
 
-Set::SetIterator::SetIterator(Iterator* iterator, Set* set) : _set(set) {
-    this->_list_iter = static_cast<LinkedList1::ListIterator*>(iterator);
+SetIterator::SetIterator(Iterator* iterator, Set* set) : _set(set) {
+    this->_list_iter = static_cast<ListIterator*>(iterator);
 }
 
-Set::SetIterator::~SetIterator() { this->_set->_memory.freeMem(this->_list_iter); }
-
-void Set::SetIterator::goToNext() {
-    if (this->_list_iter->hasNext()) {
-        this->_list_iter->goToNext();
-        return;
-    }
-    
-    for (size_t i = this->_get_elem_hash() + 1; i < this->_set->_data_array_size; i++) {
-        bool has_non_empty_list = this->_set->_data_array[i] != nullptr && !this->_set->_data_array[i]->empty();
-        if (has_non_empty_list) {
-            this->_set->_memory.freeMem(this->_list_iter);
-            this->_list_iter = static_cast<LinkedList1::ListIterator*>(this->_set->_data_array[i]->newIterator());
-            return;
-        }
-    }
-}
-
-bool Set::SetIterator::equals(Iterator* right) {
-    if (!right) return false;
-    Set::SetIterator* casted_right = static_cast<Set::SetIterator*>(right);
-    return this->_list_iter->equals(casted_right->_list_iter);
-}
+SetIterator::~SetIterator() { this->_set->_memory.freeMem(this->_list_iter); }
 
 int Set::insert(void *elem, size_t size) {
     if (!elem || size == 0) return 2;
@@ -58,7 +40,7 @@ int Set::insert(void *elem, size_t size) {
     
     bool needs_rehash = this->_data_array[hash]->size() >= _REHASHING_THRESHOLD; 
     if (needs_rehash) {
-        std::cout << "Rehashing set\n";
+        cout << "Rehashing set\n";
         this->_rehash_set();
         hash = this->hash_function(elem, size);
     }
@@ -176,13 +158,13 @@ Set::Iterator* Set::newIterator() {
 void Set::remove(Iterator* iter) {
     if (this->empty() || !iter) return;
 
-    Set::SetIterator* casted_iter = static_cast<Set::SetIterator*>(iter);
+    SetIterator* casted_iter = static_cast<SetIterator*>(iter);
     if (casted_iter->_set != this) return;
     size_t hash = casted_iter->_get_elem_hash();
 
     bool reached_list_end = !casted_iter->_list_iter->hasNext();
     if (reached_list_end) {
-        LinkedList1::ListIterator list_iter_to_remove = *casted_iter->_list_iter;
+        ListIterator list_iter_to_remove = *casted_iter->_list_iter;
         iter->goToNext();
         this->_data_array[hash]->remove(&list_iter_to_remove);
     } else {
@@ -203,7 +185,7 @@ void Set::clear() {
     }
     
     this->_elem_count = 0;
-    std::cout << "Set cleared\n";
+    cout << "Set cleared\n";
 }
 
 Set::~Set() {
@@ -215,5 +197,5 @@ Set::~Set() {
     }
 
     this->_memory.freeMem(this->_data_array);
-    std::cout << "Set destroyed\n";
+    cout << "Set destroyed\n";
 }

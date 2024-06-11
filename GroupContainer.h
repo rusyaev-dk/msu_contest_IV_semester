@@ -2,6 +2,8 @@
 #include "Container.h"
 #include "LinkedList1.h"
 
+using namespace std;
+
 // Базовый класс для некоторой группы абстрактных контейнеров
 class GroupContainer: public Container
 {
@@ -16,17 +18,30 @@ protected:
     // max container size in bytes
     size_t _max_bytes;
 
-    size_t _iter_get_elem_hash(Iterator* list_iter);
-    void* _iterGetElement(size_t& size, Iterator* list_iter);
-    bool _iterHasNext(Iterator* list_iter);
-    // void _iterGoToNext(LinkedList1::ListIterator* list_iter);
-
     inline bool _empty() { return _elem_count == 0; };
     inline int _size() { return this->_elem_count; };
     inline size_t _get_max_bytes() { return this->_max_bytes; }; 
 
 public:
+    class IteratorUtils {
+    public:
+        static size_t get_elem_hash(GroupContainer* group_container, Iterator* list_iter);
+        static void* getElement(size_t &size, GroupContainer* group_container, Iterator* list_iter);
+        static bool hasNext(GroupContainer* group_container, Iterator* list_iter);
+        static void goToNext(GroupContainer* group_container, LinkedList1::ListIterator*& list_iter);
+        
+        template <typename T>
+        static bool equals(T* left, T* right) {
+            if (!left || !right) return false;
+            return left->_list_iter->equals(right->_list_iter);
+        }
+
+        friend class GroupContainer;
+    };
+
     GroupContainer(MemoryManager &mem);
 
     size_t hash_function(void* key, size_t keySize);
+
+    friend class IteratorUtils;
 };

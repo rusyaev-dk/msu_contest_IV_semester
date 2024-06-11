@@ -3,8 +3,8 @@
 #include <chrono>
 #include <vector>
 
-using ErrorCode = ContainerTesterException::ErrorCode;
 using namespace std;
+using ErrorCode = ContainerTesterException::ErrorCode;
 
 SetTester::SetTester(size_t bytes_size) : BaseContainerTester(bytes_size) {
     this->_set = nullptr;

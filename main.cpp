@@ -4,8 +4,10 @@
 #include <functional>
 #include <vector>
 
+using namespace std;
+
 void single_testing(SetTester& set_tester) {
-    std::vector<std::function<void()>> tester_functions = {
+    vector<function<void()>> tester_functions = {
         // [&set_tester]() { return set_tester.test_insert(290000); },
         // [&set_tester]() { return set_tester.test_insert_duplicates(290000); },
 
@@ -22,17 +24,17 @@ void single_testing(SetTester& set_tester) {
         // [&set_tester]() { return set_tester.test_duplicate_iterators_removal(); },
         
         // [&set_tester]() { return set_tester.test_user_data_type(); },
-};
+    };
 
-    for (int i = 0; i < tester_functions.size(); ++i) {
+    for (int i = 0; i < tester_functions.size(); i++) {
         try {
             tester_functions[i]();
-            std::cout << "✓ Test " << i + 1 << " passed\n\n";
+            cout << "✓ Test " << i + 1 << " passed\n\n";
         } catch (ContainerTesterException& e) {
-            std::cout << e.what() << "\n\n";
+            cout << e.what() << "\n\n";
             continue;
         } catch (Container::Error& err) {
-            std::cout << err.msg << "\n\n";
+            cout << err.msg << "\n\n";
             continue;
         }
     }

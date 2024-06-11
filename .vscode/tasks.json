@@ -10,9 +10,9 @@
                 "${file}",
                 "GroupContainer.cpp",
                 "Set.cpp",
-                "SetTester.cpp",
-                "BaseContainerTester.cpp",
                 "ContainerTesterException.cpp",
+                "BaseContainerTester.cpp",
+                "SetTester.cpp",
                 "-o",
                 "${fileDirname}\\${fileBasenameNoExtension}.exe"
             ],
