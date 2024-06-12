@@ -51,6 +51,7 @@ void* IteratorUtils::getElement(size_t& size, GroupContainer* container, Iterato
 }
 
 bool IteratorUtils::hasNext(GroupContainer* container, Iterator* list_iter) {
+    if (container->empty()) return false;
     if (list_iter->hasNext()) return true;
 
     for (size_t i = get_elem_hash(container, list_iter) + 1; i < container->_data_array_size; i++) {
@@ -61,6 +62,7 @@ bool IteratorUtils::hasNext(GroupContainer* container, Iterator* list_iter) {
 }
 
 void IteratorUtils::goToNext(GroupContainer* container, ListIterator*& list_iter) {
+    if (container->empty()) return;
     if (list_iter->hasNext()) {
         list_iter->goToNext();
         return;
