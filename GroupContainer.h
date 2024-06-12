@@ -25,10 +25,10 @@ protected:
 public:
     class IteratorUtils {
     public:
-        static size_t get_elem_hash(GroupContainer* group_container, Iterator* list_iter);
-        static void* getElement(size_t &size, GroupContainer* group_container, Iterator* list_iter);
-        static bool hasNext(GroupContainer* group_container, Iterator* list_iter);
-        static void goToNext(GroupContainer* group_container, LinkedList1::ListIterator*& list_iter);
+        static size_t get_elem_hash(GroupContainer* container, Iterator* list_iter);
+        static void* getElement(size_t& size, GroupContainer* container, Iterator* list_iter);
+        static bool hasNext(GroupContainer* container, Iterator* list_iter);
+        static void goToNext(GroupContainer* container, LinkedList1::ListIterator*& list_iter);
         
         template <typename T>
         static bool equals(T* left, T* right) {

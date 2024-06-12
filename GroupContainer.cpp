@@ -45,8 +45,8 @@ size_t IteratorUtils::get_elem_hash(GroupContainer* container, Iterator* list_it
     return container->hash_function(elem, elem_size);
 }
 
-void* IteratorUtils::getElement(size_t &size, GroupContainer* group_container, Iterator* list_iter) {
-    if (group_container->empty() || size == 0) return nullptr;
+void* IteratorUtils::getElement(size_t& size, GroupContainer* container, Iterator* list_iter) {
+    if (container->empty() || size == 0) return nullptr;
     return list_iter->getElement(size);
 }
 
@@ -60,17 +60,17 @@ bool IteratorUtils::hasNext(GroupContainer* container, Iterator* list_iter) {
     return false;
 }
 
-void IteratorUtils::goToNext(GroupContainer* group_container, ListIterator*& list_iter) {
+void IteratorUtils::goToNext(GroupContainer* container, ListIterator*& list_iter) {
     if (list_iter->hasNext()) {
         list_iter->goToNext();
         return;
     }
     
-    for (size_t i = get_elem_hash(group_container, list_iter) + 1; i < group_container->_data_array_size; i++) {
-        bool has_non_empty_list = group_container->_data_array[i] != nullptr && !group_container->_data_array[i]->empty();
+    for (size_t i = get_elem_hash(container, list_iter) + 1; i < container->_data_array_size; i++) {
+        bool has_non_empty_list = container->_data_array[i] != nullptr && !container->_data_array[i]->empty();
         if (has_non_empty_list) {
-            group_container->_memory.freeMem(list_iter);
-            ListIterator* new_list_iter = static_cast<ListIterator*>(group_container->_data_array[i]->newIterator());
+            container->_memory.freeMem(list_iter);
+            ListIterator* new_list_iter = static_cast<ListIterator*>(container->_data_array[i]->newIterator());
             list_iter = new_list_iter;
             return;
         }
