@@ -35,8 +35,6 @@ public:
             if (!left || !right) return false;
             return left->_list_iter->equals(right->_list_iter);
         }
-
-        friend class GroupContainer;
     };
 
     GroupContainer(MemoryManager &mem);
