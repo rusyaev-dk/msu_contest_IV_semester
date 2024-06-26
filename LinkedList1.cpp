@@ -96,7 +96,6 @@ int List::size(){
     return num_of_elems;
 }
 
-
 Container::Iterator* List::newIterator(){
     return new ListIterator(head , NULL);
 }
@@ -112,24 +111,53 @@ Container::Iterator* List::find(void *elem, size_t size){
     return NULL;
 }
 
-
-
-
 void List::remove(Iterator* iter){
     ListIterator* remove_iter = dynamic_cast<ListIterator*>(iter);
-    if(remove_iter->prev_node==NULL){
-        remove_iter->goToNext();
-        pop_front();
+    if(remove_iter->hasNext()){
+        if(remove_iter->prev_node==NULL){
+            remove_iter->cur_node = remove_iter->cur_node->get_next();
+            pop_front();
+        }
+        else{
+            ListNode* buf = remove_iter->cur_node;
+            remove_iter->prev_node->change_next(remove_iter->cur_node->get_next());
+            remove_iter->cur_node = remove_iter->cur_node->get_next();
+            _memory.freeMem(buf->get_data());
+            num_of_elems--;
+            delete buf;
+        }
     }
     else{
-        ListNode* buf = remove_iter->cur_node;
-        remove_iter->prev_node->change_next(remove_iter->cur_node->get_next());
-        remove_iter->cur_node = remove_iter->cur_node->get_next();
-        _memory.freeMem(buf->get_data());
+        _memory.freeMem(remove_iter->cur_node);
+        remove_iter->cur_node = NULL;
         num_of_elems--;
-        delete buf;
     }
 }
+
+
+
+
+// void List::remove(Iterator* iter){
+//     ListIterator* remove_iter = dynamic_cast<ListIterator*>(iter);
+//     if(remove_iter->prev_node==NULL){
+//         if(remove_iter->cur_node->get_next()){
+//             remove_iter->goToNext();
+//             pop_front();
+//         }
+//         else{
+//             remove_iter->cur_node = NULL;
+//             pop_front();
+//         }
+//     }
+//     else{
+//         ListNode* buf = remove_iter->cur_node;
+//         remove_iter->prev_node->change_next(remove_iter->cur_node->get_next());
+//         remove_iter->cur_node = remove_iter->cur_node->get_next();
+//         _memory.freeMem(buf->get_data());
+//         num_of_elems--;
+//         delete buf;
+//     }
+// }
 
 
 void List::clear(){

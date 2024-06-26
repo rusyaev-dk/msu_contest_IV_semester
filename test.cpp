@@ -13,25 +13,15 @@ int main(){
     int max_memory = 100*MILL;
     Mem mem(max_memory);
     List test(mem);
-    size_t size = 0;
-    int var_k = 0;
-    for(int i = 0; i < 1000 ; i++ ){
-        test.push_front(&var_k , sizeof(var_k));
-        var_k++;
+    for(int i = 0 ; i < MILL; i++){
+        test.push_front(&i , sizeof(i));
     }
     Container::Iterator* new_iter = test.newIterator();
+
     cout << test.size() << endl;
-    int value = 0;
+
     while(new_iter->hasNext()){
-        value = *(int*)new_iter->getElement(size);
-        if(value%2==0){
-            test.remove(new_iter);
-        }
-        else{
-            new_iter->goToNext();
-            cout << value << endl;
-        }
+        test.remove(new_iter);
     }
-    test.clear();
     cout << test.size() << endl;
 }
