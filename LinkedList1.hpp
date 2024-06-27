@@ -3,7 +3,6 @@
 #include <iostream>
 #include "ListAbstract.h"
 #include "Mem.h"
-
 using namespace std;
 
 
@@ -55,9 +54,15 @@ class List:public AbstractList{
         ListNode* cur_node;
         ListNode* prev_node;
         public:
+
         ListIterator(ListNode* new_cur , ListNode* new_prew){
             this->cur_node = new_cur;
             this->prev_node = new_prew;
+        }
+
+        ListIterator(ListNode* new_cur){
+            this->cur_node = new_cur;
+            this->prev_node = (ListNode*)NULL;
         }
         // Возврашает явно указатель на элемент, на который указывает итератор в данный момент.
         // Неявно возвращает размер данных.

@@ -97,19 +97,30 @@ int List::size(){
 }
 
 Container::Iterator* List::newIterator(){
-    return new ListIterator(head , NULL);
+    if(this->head){
+        Iterator* new_iter = new ListIterator(head , NULL);
+        return new_iter;
+    }
+    else{
+        cout << "container is empty" << endl;
+        return NULL;
+    }
 }
 
+
 Container::Iterator* List::find(void *elem, size_t size){
-    ListIterator* find_iter = dynamic_cast<ListIterator*>(newIterator());
+    Iterator* find_iter = this->newIterator(); 
+    size_t size_bf;
     while(find_iter->hasNext()){
-        if(find_iter->cur_node->get_data() == elem){
+        if(memcmp(find_iter->getElement(size_bf) , elem , size)==0){
             return find_iter;
         }
         find_iter->goToNext();
     }
+    cout << "ne nawel" << endl;
     return NULL;
 }
+
 
 void List::remove(Iterator* iter){
     ListIterator* remove_iter = dynamic_cast<ListIterator*>(iter);
