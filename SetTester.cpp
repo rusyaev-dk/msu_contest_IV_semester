@@ -45,7 +45,7 @@ void SetTester::test_find(size_t elem_count) {
 
     Set::SetIterator* iter;
     size_t uninserted_elem = elem_count + 1;
-    iter = dynamic_cast<Set::SetIterator*>(this->_set->find(&uninserted_elem, sizeof(uninserted_elem)));
+    iter = static_cast<Set::SetIterator*>(this->_set->find(&uninserted_elem, sizeof(uninserted_elem)));
     if (iter) {
         delete iter;
         this->_destroy_container();
@@ -53,7 +53,7 @@ void SetTester::test_find(size_t elem_count) {
     }
 
     for (size_t i = 0; i < elem_count; i++) {
-        iter = dynamic_cast<Set::SetIterator*>(this->_set->find(&i, sizeof(i)));
+        iter = static_cast<Set::SetIterator*>(this->_set->find(&i, sizeof(i)));
         if (!iter) {
             this->_destroy_container();
             throw ContainerTesterException(ErrorCode::ELEM_NOT_FOUND_ERROR, "Iterator for exact elem was not found.");
@@ -75,7 +75,7 @@ void SetTester::test_remove(size_t elem_count) {
     this->_create_container();
     this->_fill_container_with_size_t(elem_count);
 
-    Set::SetIterator* iter = dynamic_cast<Set::SetIterator*>(this->_set->newIterator());
+    Set::SetIterator* iter = static_cast<Set::SetIterator*>(this->_set->newIterator());
     Set::SetIterator* checking_iter = nullptr;
     size_t set_size = this->_set->size();
     
@@ -86,7 +86,7 @@ void SetTester::test_remove(size_t elem_count) {
 
         this->_set->remove(iter);
         
-        checking_iter = dynamic_cast<Set::SetIterator*>(this->_set->find(elem_copy, elem_size));
+        checking_iter = static_cast<Set::SetIterator*>(this->_set->find(elem_copy, elem_size));
         if (checking_iter) {
             delete iter;
             delete checking_iter;
@@ -108,7 +108,7 @@ void SetTester::test_remove_even(size_t elem_count) {
     this->_create_container();
     this->_fill_container_with_size_t(elem_count);
 
-    Set::SetIterator* iter = dynamic_cast<Set::SetIterator*>(this->_set->newIterator());
+    Set::SetIterator* iter = static_cast<Set::SetIterator*>(this->_set->newIterator());
     size_t initial_set_size = this->_set->size();
 
     for (size_t i = 0; i < initial_set_size; i++) {
@@ -150,7 +150,7 @@ void SetTester::test_clear(size_t elem_count) {
     this->_set->clear();
     Set::SetIterator* iter;
     for (size_t i = 0; i < elem_count; i++) {
-        iter = dynamic_cast<Set::SetIterator*>(this->_set->find(&i, sizeof(i)));
+        iter = static_cast<Set::SetIterator*>(this->_set->find(&i, sizeof(i)));
         if (iter) {
             delete iter;
             this->_destroy_container();
@@ -165,7 +165,7 @@ void SetTester::test_iterator_after_last_elem_removal() {
     this->_create_container();
     this->_fill_container_with_size_t(1);
     
-    Set::SetIterator* iter = dynamic_cast<Set::SetIterator*>(this->_set->newIterator());
+    Set::SetIterator* iter = static_cast<Set::SetIterator*>(this->_set->newIterator());
     if (!iter) {
         this->_destroy_container();
         throw ContainerTesterException(ErrorCode::ITERATOR_ERROR, "No iterator created for non-empty set.");
@@ -186,7 +186,7 @@ void SetTester::test_iterator_empty_set() {
     this->_create_container();
 
     try {
-        Set::SetIterator* iter = dynamic_cast<Set::SetIterator*>(this->_set->newIterator());
+        Set::SetIterator* iter = static_cast<Set::SetIterator*>(this->_set->newIterator());
         if (iter) {
             delete iter;
             this->_destroy_container();
@@ -204,7 +204,7 @@ void SetTester::test_iterator_after_set_cleared(size_t elem_count) {
     this->_create_container();
     this->_fill_container_with_size_t(elem_count);
 
-    Set::SetIterator* iter = dynamic_cast<Set::SetIterator*>(this->_set->newIterator());
+    Set::SetIterator* iter = static_cast<Set::SetIterator*>(this->_set->newIterator());
     this->_set->clear();
 
     size_t elem_size;
@@ -226,8 +226,8 @@ void SetTester::test_duplicate_iterators_removal() {
     int err_code = this->_set->insert(&elem, sizeof(elem));
     this->_validate_insertion_code(err_code);
 
-    Set::SetIterator* iter_1 = dynamic_cast<Set::SetIterator*>(this->_set->newIterator());
-    Set::SetIterator* iter_2 = dynamic_cast<Set::SetIterator*>(this->_set->newIterator());
+    Set::SetIterator* iter_1 = static_cast<Set::SetIterator*>(this->_set->newIterator());
+    Set::SetIterator* iter_2 = static_cast<Set::SetIterator*>(this->_set->newIterator());
    
     this->_set->remove(iter_1);
     size_t elem_size;
@@ -256,7 +256,7 @@ void SetTester::test_user_data_type() {
     int err_code = this->_set->insert(&p1, sizeof(p1));
     this->_validate_insertion_code(err_code);
 
-    Set::SetIterator* iter = dynamic_cast<Set::SetIterator*>(this->_set->find(&p1, sizeof(p1)));
+    Set::SetIterator* iter = static_cast<Set::SetIterator*>(this->_set->find(&p1, sizeof(p1)));
     if (!iter) {
         this->_destroy_container();
         throw ContainerTesterException(ErrorCode::ELEM_NOT_FOUND_ERROR);
@@ -291,7 +291,7 @@ void SetTester::check_perfomance(size_t elem_count) {
     Set::SetIterator* iter;
     start = chrono::high_resolution_clock::now();
     for (size_t i = 0; i < elem_count; i++) {
-        iter = dynamic_cast<Set::SetIterator*>(this->_set->find(&i, sizeof(i)));
+        iter = static_cast<Set::SetIterator*>(this->_set->find(&i, sizeof(i)));
         if (iter) delete iter;
     }
     
@@ -299,7 +299,7 @@ void SetTester::check_perfomance(size_t elem_count) {
     elapsed = finish - start;
     cout << "Found " << elem_count << " elements in " << elapsed.count() << " ms.\n";
 
-    iter = dynamic_cast<Set::SetIterator*>(this->_set->newIterator());
+    iter = static_cast<Set::SetIterator*>(this->_set->newIterator());
     size_t set_size = this->_set->size();
     start = chrono::high_resolution_clock::now();
     for (size_t i = 0; i < set_size; i++) {
@@ -317,7 +317,8 @@ void SetTester::check_perfomance(size_t elem_count) {
 }
 
 void SetTester::run_all_tests(size_t elem_count) {
-    // tests is vector containing pairs (&test_func, test_name)
+    
+    // Tests is vector containing pairs (&test_func, test_name)
     const initializer_list<pair<function<void()>, string>> tests = {
         {[&] { this->test_insert(elem_count); }, "Insert test"},
         {[&] { this->test_insert_duplicates(elem_count); }, "Insert duplicates test"},
@@ -378,7 +379,7 @@ void SetTester::_container_traversal_with_check(size_t elem_count, function<bool
         elements_to_view[i] = make_pair(i, false);
     }
 
-    Set::SetIterator* iter = dynamic_cast<Set::SetIterator*>(this->_set->newIterator());
+    Set::SetIterator* iter = static_cast<Set::SetIterator*>(this->_set->newIterator());
     size_t set_size = this->_set->size();
     try {
         for (size_t i = 0; i < set_size; i++) {
@@ -411,6 +412,7 @@ void SetTester::_container_traversal_with_check(size_t elem_count, function<bool
     
     for (size_t i = 0; i < elem_count; i++) {
         if (!elements_to_view[i].second && rule(i)) {
+            // Elem was not found but it has to
             throw ContainerTesterException(ErrorCode::DATA_ERROR, "Not all elements were found.");
         }
     }

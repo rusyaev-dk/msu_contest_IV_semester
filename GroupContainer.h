@@ -21,6 +21,19 @@ protected:
     inline bool _empty() { return _elem_count == 0; };
     inline int _size() { return this->_elem_count; };
     inline size_t _get_max_bytes() { return this->_max_bytes; }; 
+    
+    template <typename T,typename Iterator>
+    Iterator* _newIterator(T* container) {
+        if (this->_empty()) return nullptr;
+    
+        for (size_t i = 0; i < this->_data_array_size; i++) {
+            bool has_non_empty_list = this->_data_array[i] != nullptr && !this->_data_array[i]->empty();
+            if (has_non_empty_list) {
+                return new Iterator(this->_data_array[i]->newIterator(), container);
+            }
+        }
+        return nullptr;
+    }
 
 public:
     class IteratorUtils {

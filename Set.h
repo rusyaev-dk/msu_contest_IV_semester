@@ -28,8 +28,9 @@ public:
         
         ~SetIterator();
 
-        friend class Set;
+        friend class GroupContainer;
         friend class IteratorUtils;
+        friend class Set;
     };
 
     Set(MemoryManager &mem): AbstractSet(mem) {};
@@ -37,7 +38,7 @@ public:
     int insert(void* elem, size_t size) override;
 
     Iterator* find(void* elem, size_t size) override;
-    Iterator* newIterator() override;
+    Iterator* newIterator() override { return _newIterator<Set, SetIterator>(this); };
     
     void remove(Iterator *iter) override;
     void clear() override;
