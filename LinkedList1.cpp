@@ -8,35 +8,6 @@ using namespace std;
 List::~List(){
     this->clear();  
 }
-// List::List(MemoryManager &mem) : AbstractList(mem){
-// //     List* new_list = (List*)_memory.allocMem(sizeof(List));
-// //     new_list->head = NULL;
-// //     new_list->num_of_elems = 0;
-//        this->head = NULL;
-//         this->num_of_elems = 0;
-//  }
-
-void* List::ListIterator::getElement(size_t &size){
-    size = sizeof(this->cur_node->get_data());
-    return this->cur_node->get_data();
-}
-
-bool List::ListIterator::hasNext(){
-    return (bool)(this->cur_node->get_next());
-}
-
-void List::ListIterator::goToNext(){
-    if(this->hasNext()){
-        this->prev_node = cur_node;
-        this->cur_node = this->cur_node->get_next();
-    }
-}
-
- bool List::ListIterator::equals(Iterator *right){
-    ListIterator* list_right = dynamic_cast<ListIterator*>(right);
-    return (bool)(this==list_right);
- }
-
 
  int List::push_front(void *elem, size_t elemSize){
         void* new_data = _memory.allocMem(elemSize);

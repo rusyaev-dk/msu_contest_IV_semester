@@ -7,38 +7,6 @@ using namespace std;
 
 
 
-class ListNode{
-    private:
-    void* data;
-    ListNode* next;
-    size_t elem_size;
-    public:
-        ListNode(void* new_data , ListNode* new_next , size_t new_size){
-            this->data = new_data;
-            this->next = new_next;
-            this->elem_size = new_size;
-        }
-        ~ListNode() = default;
-
-    void* get_data(){
-        return this->data;
-    }
-
-    size_t get_size(){
-        return this->elem_size;
-    }
-
-    ListNode* get_next(){ 
-        return this->next;
-    }
-
-    void change_next(ListNode* new_next){
-        this->next = new_next;
-    }
-};
-
-
-
 class List:public AbstractList{
     private:
     ListNode* head;
@@ -46,50 +14,7 @@ class List:public AbstractList{
 
     public:
 
-
-
-
-    class ListIterator : public Container::Iterator{
-        private:
-        ListNode* cur_node;
-        ListNode* prev_node;
-        public:
-
-        ListIterator(ListNode* new_cur , ListNode* new_prew){
-            this->cur_node = new_cur;
-            this->prev_node = new_prew;
-        }
-
-        ListIterator(ListNode* new_cur){
-            this->cur_node = new_cur;
-            this->prev_node = (ListNode*)NULL;
-        }
-        // Возврашает явно указатель на элемент, на который указывает итератор в данный момент.
-        // Неявно возвращает размер данных.
-        // Если итератор показывает за пределы контейнера (например, удален последний элемент), возвращает NULL.
-        void* getElement(size_t &size);
-
-        // Возвращает true, если есть следующий элемент, иначе false.
-        bool hasNext();
-
-        // Переход к следующему элементу.
-        void goToNext();
-
-        // проверка на равенство итераторов
-        bool equals(Iterator *right);
-
-        friend class ListNode;
-        friend class List;
-    };
-
-
-
-    List(MemoryManager &mem) : AbstractList(mem){
-        head = NULL;
-        num_of_elems = 0;
-    }
-
-
+    List(MemoryManager &mem): AbstractList(mem) {}
 
     ~List();
     // Добавление элемента в начало контейнера.
@@ -132,6 +57,7 @@ class List:public AbstractList{
 
     // Если контейнер пуст возвращает true, иначе false
     bool empty();
+
 };
 
 #endif
