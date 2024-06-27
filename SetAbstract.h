@@ -6,7 +6,7 @@ class AbstractSet: public GroupContainer
 {
 public:
     // конструктор
-    AbstractSet(MemoryManager &mem): GroupContainer(mem) {}
+    AbstractSet(MemoryManager &mem): GroupContainer(mem, ContainerType::set) {}
 
     // деструктор
     virtual ~AbstractSet() {}

@@ -9,7 +9,8 @@ using ListIterator = LinkedList1::ListIterator;
 static const size_t _FNV_PRIME = 2^40 + 2^8 + 0xB3;
 static const size_t _OFFSET_BASIS = 0x811C9DC5;
 
-GroupContainer::GroupContainer(MemoryManager &mem): Container(mem) {
+GroupContainer::GroupContainer(MemoryManager &mem, ContainerType type): Container(mem) {
+    this->_type = type;
     this->_max_bytes = sizeof(LinkedList1*) * this->_data_array_size;
     this->_data_array = (LinkedList1**)this->_memory.allocMem(this->_max_bytes);
     if (!this->_data_array) {
@@ -36,14 +37,14 @@ size_t GroupContainer::hash_function(void* key, size_t keySize) {
     return hash % this->_data_array_size;
 }
 
-size_t IteratorUtils::get_elem_hash(GroupContainer* container, Iterator* list_iter) {
-    size_t elem_size;
-    void* elem = list_iter->getElement(elem_size);
-    if (!elem) {
-        throw Error("Elem in active iterator is null.");
-    }
-    return container->hash_function(elem, elem_size);
-}
+// size_t IteratorUtils::get_elem_hash(GroupContainer* container, Iterator* list_iter) {
+//     size_t elem_size;
+//     void* elem = list_iter->getElement(elem_size);
+//     if (!elem) {
+//         throw Error("Elem in active iterator is null.");
+//     }
+//     return container->hash_function(elem, elem_size);
+// }
 
 void* IteratorUtils::getElement(size_t& size, GroupContainer* container, Iterator* list_iter) {
     if (container->empty() || size == 0) return nullptr;
