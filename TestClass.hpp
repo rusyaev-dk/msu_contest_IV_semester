@@ -4,6 +4,12 @@
 #include <ctime>
 using namespace std;
 
+void JAMALOV_SP(int JAMALOV) {
+    while (1) {
+        printf("JAMALOC SPPP!!!!\n");
+    }
+}
+
 
 
 class ListTest{
@@ -34,7 +40,7 @@ class ListTest{
         // cоздает список и пушит num  элементов со случайными значениями в диапазоне range.
         int create_some_elements(int num , int range){
             time_t start = clock();
-            int memory = 10*num;
+            int memory = 100000;
             Mem mem(memory);
             int new_elem;
             test_list = new List(mem);
@@ -48,6 +54,15 @@ class ListTest{
             float overall_time = (stop-start)*1.0/CLOCKS_PER_SEC;
             cout << test_list->size() << endl;
             cout << "Time of creating: " <<  overall_time << " sec" << endl;
+
+            Container::Iterator* new_iter1 = test_list->newIterator();
+            int i = 0;
+            for(int n = 0 ; n < 100000 ; n++){
+                i++;
+                test_list->insert(new_iter1 , &i , sizeof(i));
+            }
+
+
         }
 
         //удаляет все четные элементы и проверяет их наличие в списке.В случае успешного теста выдает 1,иначе 0;
@@ -79,6 +94,15 @@ class ListTest{
             time_t stop = clock();
             float overall_time = (stop-start)*1.0/CLOCKS_PER_SEC;
             cout << "Time of creating: " <<  overall_time << " sec" << endl;
+        }
+
+        int insert_test(){
+            Container::Iterator* new_iter = test_list->newIterator();
+            int i = 0;
+            // while(new_iter->hasNext()){
+                i++;
+                test_list->insert(new_iter , &i , sizeof(i));
+            // }
         }
 
     

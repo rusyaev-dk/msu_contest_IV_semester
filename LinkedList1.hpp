@@ -14,7 +14,10 @@ class List:public AbstractList{
 
     public:
 
-    List(MemoryManager &mem): AbstractList(mem) {}
+    List(MemoryManager &mem): AbstractList(mem) {
+        head = NULL;
+        num_of_elems = 0;
+    }
 
     ~List();
     // Добавление элемента в начало контейнера.

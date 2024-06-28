@@ -42,6 +42,7 @@ protected:
 
     };
 
+    public: 
 
     class ListIterator : public Container::Iterator{
         private:
@@ -89,6 +90,7 @@ protected:
             friend class ListNode;
             friend class List;
     };
+
 
 };
 #endif

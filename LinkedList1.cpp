@@ -39,6 +39,11 @@ void* List::front(size_t &size){
     return head->get_data();
 }
 
+// int List::insert(Iterator *iter, void *elem, size_t elemSize){
+//     ListIterator* list_iter = dynamic_cast<ListIterator*>(iter);
+
+// }
+
 
 int List::insert(Iterator *iter, void *elem, size_t elemSize){
     ListIterator* list_iter = dynamic_cast<ListIterator*>(iter);
@@ -52,6 +57,7 @@ int List::insert(Iterator *iter, void *elem, size_t elemSize){
     }
     else{
         push_front(elem , elemSize);
+        list_iter->cur_node = head;
     }
     return 0;
 }
@@ -115,32 +121,6 @@ void List::remove(Iterator* iter){
         num_of_elems--;
     }
 }
-
-
-
-
-// void List::remove(Iterator* iter){
-//     ListIterator* remove_iter = dynamic_cast<ListIterator*>(iter);
-//     if(remove_iter->prev_node==NULL){
-//         if(remove_iter->cur_node->get_next()){
-//             remove_iter->goToNext();
-//             pop_front();
-//         }
-//         else{
-//             remove_iter->cur_node = NULL;
-//             pop_front();
-//         }
-//     }
-//     else{
-//         ListNode* buf = remove_iter->cur_node;
-//         remove_iter->prev_node->change_next(remove_iter->cur_node->get_next());
-//         remove_iter->cur_node = remove_iter->cur_node->get_next();
-//         _memory.freeMem(buf->get_data());
-//         num_of_elems--;
-//         delete buf;
-//     }
-// }
-
 
 void List::clear(){
     while(num_of_elems!=0){
