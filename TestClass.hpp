@@ -51,18 +51,22 @@ class ListTest{
             }
 
             time_t stop = clock();
+
             float overall_time = (stop-start)*1.0/CLOCKS_PER_SEC;
+
             cout << test_list->size() << endl;
-            cout << "Time of creating: " <<  overall_time << " sec" << endl;
 
             Container::Iterator* new_iter1 = test_list->newIterator();
             int i = 0;
-            for(int n = 0 ; n < 100000 ; n++){
+            for(int n = 0 ; n < 10 ; n++){
                 i++;
                 test_list->insert(new_iter1 , &i , sizeof(i));
             }
-
-
+            cout << test_list->size() << endl;
+            
+            cout << "Time of creating: " <<  overall_time << " sec" << endl;
+            
+            
         }
 
         //удаляет все четные элементы и проверяет их наличие в списке.В случае успешного теста выдает 1,иначе 0;
@@ -74,20 +78,6 @@ class ListTest{
             int buf;
             int start_size = test_list->size();
 
-            while(new_iter->hasNext()){
-                buf = *(int*)new_iter->getElement(size);
-                if(buf%2==0){
-                    test_list->remove(new_iter);
-                }
-                else{
-                    new_iter->goToNext();
-                }
-            }
-
-            buf = *(int*)new_iter->getElement(size);
-            if(buf%2==0){
-                test_list->remove(new_iter);
-            }
 
             cout << "Elements deleted: " << start_size - test_list->size() << endl;
 

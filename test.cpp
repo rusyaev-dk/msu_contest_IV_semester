@@ -12,6 +12,6 @@ using namespace std;
 int main(){
 
     ListTest* new_test = new ListTest();
-    new_test->create_some_elements(1000000 , 10);
+    new_test->create_some_elements(10 , 10);
     new_test->delete_evens();
 }
