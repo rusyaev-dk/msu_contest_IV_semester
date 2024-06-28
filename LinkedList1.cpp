@@ -1,4 +1,3 @@
-
 #include <iostream>
 #include "LinkedList1.hpp"
  
@@ -23,7 +22,7 @@ List::~List(){
     if(head->get_next()){
         ListNode* buf = head;
         head = head->get_next();
-        _memory.freeMem(buf->get_data());
+        free(buf->get_data());
         delete buf;
     }
     else{
@@ -89,10 +88,13 @@ Container::Iterator* List::find(void *elem, size_t size){
     Iterator* find_iter = this->newIterator(); 
     size_t size_bf;
     while(find_iter->hasNext()){
-        if(memcmp(find_iter->getElement(size_bf) , elem , size)==0){
+        if((memcmp(find_iter->getElement(size_bf) , elem , size))==0){
             return find_iter;
         }
         find_iter->goToNext();
+    }
+    if((memcmp(find_iter->getElement(size_bf) , elem , size))==0){
+            return find_iter;
     }
     cout << "ne nawel" << endl;
     return NULL;
@@ -107,16 +109,22 @@ void List::remove(Iterator* iter){
             pop_front();
         }
         else{
-            ListNode* buf = remove_iter->cur_node;
-            remove_iter->prev_node->change_next(remove_iter->cur_node->get_next());
+            ListNode* buf = remove_iter->cur_node->get_next();
+            free(remove_iter->cur_node->get_data());
+            delete remove_iter->cur_node;
+            remove_iter->cur_node = buf;
+            remove_iter->prev_node->change_next(buf);   
+            num_of_elems--;
+            /*ListNode* buf = remove_iter->cur_node;
             remove_iter->cur_node = remove_iter->cur_node->get_next();
             _memory.freeMem(buf->get_data());
-            num_of_elems--;
             delete buf;
+            remove_iter->prev_node->change_next(remove_iter->cur_node);*/
         }
     }
     else{
-        _memory.freeMem(remove_iter->cur_node);
+        free(remove_iter->cur_node->get_data());
+        delete remove_iter->cur_node;
         remove_iter->cur_node = NULL;
         num_of_elems--;
     }
@@ -131,6 +139,3 @@ void List::clear(){
 bool List::empty(){
     return !(bool)(num_of_elems);
 }
-
-
-
